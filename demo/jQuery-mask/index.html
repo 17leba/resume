@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>mask</title>
+	<script src="../jquery.js"></script>
+	<script src="jQuery-mask.js"></script>
+</head>
+<body>
+	<a href="javascript:void(0)" class="J_mask-btn">mask</a>
+	<a href="javascript:void(0)" class="J_mask-btn-close">mask close</a>
+	<script>
+	$(function(){
+		$(".J_mask-btn").on("click",function(){
+			$.mask()
+		})
+		$(".J_mask-btn-close").on("click",function(){
+			$.mask(false)
+		})
+	})
+	</script>
+</body>
+</html>
