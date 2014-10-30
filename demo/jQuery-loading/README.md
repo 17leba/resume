@@ -13,6 +13,8 @@ jQuery-plugins-loading
 <div class="loading-box"></div>
 <div class="loading-box"></div>
 ```
+### Live Demo
+[View Demo](http://17leba.github.io/demo/jQuery-loading/)
 ### 参数默认为空，直接加到J_loading-1后面
 ```html
 $(".J_loading-1").loading();
