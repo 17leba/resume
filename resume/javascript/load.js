@@ -118,6 +118,7 @@
 						}
 					}
 				}
+				console.log(jsonObj,jsonObj[jsonId])
 				xmlHttp.open("GET",jsonObj[jsonId],true);
 				xmlHttp.setRequestHeader("Content-Type","application/json");
 				xmlHttp.send(null);
