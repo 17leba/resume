@@ -78,7 +78,7 @@
 	<script>
 		var canvas,context;
 		document.addEventListener("DOMContentLoaded",function(){
-			canvas = pb.init("myCanvas");
+			canvas = document.getElementById("myCanvas");
 			context = canvas.getContext("2d"); 
 			
 			loadSources.init(Config.sourceList,function(){
