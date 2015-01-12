@@ -6,11 +6,10 @@
 </head>
 <body>
 	<script>
-	var audio = document.createElement("audio");
-	audio.src = "start.mp3";
+	var audio = new Audio("start.mp3");
 	audio.addEventListener("canplaythrough",function(){
 		alert("can play!")
-	})
+	},false)
 	</script>
 </body>
 </html>
