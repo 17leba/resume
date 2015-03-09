@@ -1,12 +1,15 @@
 function Game(){
 	var that = this;
+
+	this.canvasWidth = canvas.width;
+	this.canvasHeight = canvas.height;
 	// json cells 缓存
 	this.jsonCells = {};
-
-	// 角色 boy or girl or runner 默认为boy
-	this.role = "girl";
 	// 角色分类 两种 jumper and runner
 	this.currentRole = "jumper";
+	// 角色 boy or girl or runner 默认为boy
+	this.role = "boy";
+	// 角色的宽高
 	this.roleWidth = 0;
 	this.roleHeight = 0;
 	// 跳跃者是否开始动作 不跳跃时有动作
@@ -17,8 +20,6 @@ function Game(){
 	this.entranceBlackRoom = false;
 	// 逃离小黑屋需投掷的骰子次数
 	this.fleeBlackRoom = 3;
-	this.canvasWidth = canvas.width;
-	this.canvasHeight = canvas.height;
 	// 假定屏幕高为10m
 	this.canvasPresumeHeight = 10;
 	this.canvasHalfPersumeHeight = this.canvasPresumeHeight / 2;
@@ -36,6 +37,7 @@ function Game(){
 	// 骰子是否结束转动
 	this.oneEndRotate = false;
 	this.twoEndRotate = false;
+	// 摇骰子时鼠标的状态
 	this.mousedown = false;
 	this.mouseup = false;
 	// 开始丢骰子
@@ -54,21 +56,26 @@ function Game(){
 	this.matrixSlope = 45 * Config.deg - Config.slopeAngle * Config.deg;
 
 	// 行走地图的真实高度和宽度（比行走图多一格）
-	this.mapRealHorizontal = (60 * 7 * Math.tan(this.matrixSlope) + 60 * 7 * (1 / Math.cos(this.matrixSlope))) * Math.LOG2E / 2;
-	this.mapRealVertical = this.mapRealHorizontal * Math.tan(this.slopeAngle);
-	
+	// this.mapRealHorizontal = (60 * 7 * Math.tan(this.matrixSlope) + 60 * 7 * (1 / Math.cos(this.matrixSlope))) * Math.SQRT2 / 2;
+	// this.mapRealVertical = this.mapRealHorizontal * Math.tan(this.slopeAngle);
+	this.mapRealHorizontal = 60 * 7 * Math.cos(this.matrixSlope) / Math.cos(this.slopeAngle);
+	this.mapRealVertical = this.mapRealHorizontal * Math.tan(this.matrixSlope); 
+
 	// 行走地图宽度和高度（1/2）
-	this.mapHorizontal = (60 * 6 * Math.tan(this.matrixSlope) + 60 * 6 * (1 / Math.cos(this.matrixSlope))) * Math.LOG2E / 2;
-	this.mapVertical = this.mapHorizontal * Math.tan(this.slopeAngle);
+	// this.mapHorizontal = (60 * 6 * Math.tan(this.matrixSlope) + 60 * 6 * (1 / Math.cos(this.matrixSlope))) * Math.SQRT2 / 2;
+	// this.mapVertical = this.mapHorizontal * Math.tan(this.slopeAngle);
+	this.mapHorizontal = 60 * 6 * Math.cos(this.matrixSlope) / Math.cos(this.slopeAngle);
+	this.mapVertical = this.mapHorizontal * Math.tan(this.matrixSlope);
+
 	// 行走地图在画布中的离左上角的坐标（水平垂直居中）
 	this.walkMapLeft = this.canvasWidth / 2  - this.mapRealHorizontal;
 	this.walkMapTop = this.canvasHeight / 2 - this.mapRealVertical;
 	
 	// 一格的长度
-	this.horizontalPacePix = Math.floor(this.mapHorizontal / 6) - 5;
+	this.horizontalPacePix = Math.floor(this.mapHorizontal / 6);
 	// 一格的高度
 	this.verticalPacePix = Math.floor(this.mapVertical / 6);
-	// 每一步的时间
+	// 跳跃者每一步的时间
 	this.jumperMoveAniTime = 300;
 	// 跳跃和下降的时间，为移动时间的一半
 	this.jumperJumpAniTime = this.jumperMoveAniTime / 2;
@@ -79,16 +86,18 @@ function Game(){
 	// 人物向上/下跳动的垂直速度
 	// 跳跃高度为1.5倍的两格中心点的高度
 	// 根据 vt + 0.5 * gt² = s (加速度方向为负)公式求出：
-	this.jumperVerticalUpSpeed = (this.jumperGridMeter * 2 + 0.5 * Config.GRAVITY_FORCE * Math.pow(this.jumperJumpAniTime / 1000,2)) / (this.jumperJumpAniTime / 1000);
-	this.jumperVerticalDownSpeed = (this.jumperGridMeter * 1 + 0.5 * Config.GRAVITY_FORCE * Math.pow(this.jumperJumpAniTime / 1000,2)) / (this.jumperJumpAniTime / 1000);
-	this.jumperJumpUpSpeed = (this.jumperGridMeter * 2.3 - 0.5 * Config.GRAVITY_FORCE * Math.pow(this.jumperJumpAniTime / 1000,2)) / (this.jumperJumpAniTime / 1000);
-	this.jumperJumpDownSpeed = (this.jumperGridMeter * 1.1 - 0.5 * Config.GRAVITY_FORCE * Math.pow(this.jumperJumpAniTime / 1000,2)) / (this.jumperJumpAniTime / 1000);
+	// 向上跳跃时和下降时的初始速度（向上行走）
+	this.jumperLeftUpSpeed = (this.jumperGridMeter * 2 + 0.5 * Config.GRAVITY_FORCE * Math.pow(this.jumperJumpAniTime / 1000,2)) / (this.jumperJumpAniTime / 1000);
+	this.jumperLeftDownSpeed = (this.jumperGridMeter * 1.1 - 0.5 * Config.GRAVITY_FORCE * Math.pow(this.jumperJumpAniTime / 1000,2)) / (this.jumperJumpAniTime / 1000);
+	// 向上跳跃时和下降时的初始速度（向下行走）
+	this.jumperRightUpSpeed = (this.jumperGridMeter * 1 + 0.5 * Config.GRAVITY_FORCE * Math.pow(this.jumperJumpAniTime / 1000,2)) / (this.jumperJumpAniTime / 1000);
+	this.jumperRightDownSpeed = (this.jumperGridMeter * 2.3 - 0.5 * Config.GRAVITY_FORCE * Math.pow(this.jumperJumpAniTime / 1000,2)) / (this.jumperJumpAniTime / 1000);
 
 	// 跑步者每一格的时间
 	this.runnerAniTime = 300;
 	// 跑步者水平速度（每秒水平移动多少像素）
 	this.runnerHPixEverySec = Math.floor(this.horizontalPacePix / (this.runnerAniTime / 1000));
-	this.runnerVPixEverySec = this.runnerHPixEverySec * Math.tan(this.slopeAngle);
+	this.runnerVPixEverySec = this.runnerHPixEverySec * Math.tan(this.matrixSlope);
 	// 开始跳跃
 	this.startJump = false;
 	// 开始移动
@@ -110,6 +119,7 @@ function Game(){
 	// 是否正在快捷键查看简历
 	this.shortCutView = false;
 	// selector
+	this.fpsShow = document.getElementById("fps-show");
 	this.selectRoleWrap = document.querySelector(".select-role-wrap");
 	this.gameCutDown = document.querySelector(".game-cutdown");
 	this.roleListAll = document.querySelectorAll(".role-list");
@@ -135,7 +145,7 @@ function Game(){
 	this.diceSound = Config.mediaSource[1];
 	// 跳跃音效
 	this.jumperSound = Config.mediaSource[2]
-	// 跑步者音效
+	// 跑步音效
 	this.runnerSound = Config.mediaSource[3];
 	// resume sound
 	this.resumeSound = Config.mediaSource[4];
@@ -143,7 +153,8 @@ function Game(){
 	this.cutSound = Config.mediaSource[5];
 
 	this.coverSlideTime = 400;
-	this.pauseGame = false;
+	this.lastFrameTime = 0;
+	this.pauseGameTag = false;
 	this.commonFps = 60;
 	this.resumeArr = [];
 
@@ -156,9 +167,9 @@ function Game(){
 				sprite.painter.cellsIndex = 6;
 			}else{
 				if(this.lastAdvance === 6){
-					this.lastAdvance = -1;
+					this.lastAdvance = 0;
 				}
-				sprite.painter.cellsIndex = ++this.lastAdvance;
+				sprite.painter.cellsIndex = this.lastAdvance++;
 			}
 		},
 		execute:function(sprite,context,time){
@@ -208,16 +219,17 @@ function Game(){
 				sprite.painter.cellsIndex = 6;
 			}else{
 				if(this.lastAdvance === 6){
-					this.lastAdvance = -1;
+					this.lastAdvance = 0;
 				}
-				sprite.painter.cellsIndex = ++this.lastAdvance;
+				sprite.painter.cellsIndex = this.lastAdvance++;
 			}
 		},
 		isInBlackRoom:function(){
 			if(that.entranceBlackRoom){
 				that.fleeBlackRoom--;
-				// 投掷三次或者点数相同
+				// 投掷三次或者点数相同，则跳出小黑屋
 				if(!that.fleeBlackRoom || that.diceOneNum === that.diceTwoNum){
+					that.fleeBlackRoom = 3;
 					that.entranceBlackRoom = false;
 					return false;
 				}
@@ -251,7 +263,7 @@ function Game(){
 					that.rollDiceShow(true);
 					setTimeout(function(){
 						that.diceLocReset();
-					},800)
+					},500)
 					return;
 				}
 				var timeOut = setTimeout( function(){
@@ -296,12 +308,12 @@ function Game(){
 		jumpDirection:function(){
 			if(that.currentPointer > 12 && that.currentPointer < 25){
 				this.direction = "down";
-				this.jumperVerticalUpSpeed = that.jumperVerticalDownSpeed;
-				this.jumperVerticalDownSpeed = that.jumperJumpUpSpeed;
+				this.jumperVerticalUpSpeed = that.jumperRightUpSpeed;
+				this.jumperVerticalDownSpeed = that.jumperRightDownSpeed;
 			}else{
 				this.direction = "up";
-				this.jumperVerticalUpSpeed = that.jumperVerticalUpSpeed;
-				this.jumperVerticalDownSpeed = that.jumperJumpDownSpeed;
+				this.jumperVerticalUpSpeed = that.jumperLeftUpSpeed;
+				this.jumperVerticalDownSpeed = that.jumperLeftDownSpeed;
 			}
 		},
 		execute:function(sprite,context,time){
@@ -326,17 +338,6 @@ function Game(){
 					var framePerSecond = 1/that.commonFps;
 					sprite.velocityY = (this.jumperVerticalDownSpeed + Config.GRAVITY_FORCE * (sprite.fallTimer.getElapsedTime() / 1000)) * that.pixPerMeter * framePerSecond;
 					sprite.top +=  sprite.velocityY;
-					// 修正垂直距离差
-					// this.distanceGap = that.verticalPacePix * 1.05 - Math.abs(sprite.top - this.originTop);
-					// if(this.distanceGap > 0){
-					// 	this.originTop = 0;
-					// 	if(that.currentPointer > 12 && that.currentPointer < 25){
-					// 		// sprite.left -= this.distanceGap;
-					// 		sprite.top += this.distanceGap
-					// 	}else{
-					// 		sprite.top -= this.distanceGap;
-					// 	}
-					// }
 				}else{
 					that.startMovePer = false;
 					if(that.startMoveAll){
@@ -364,7 +365,6 @@ function Game(){
 			if(sprite.moveTimer.isRunning()){
 				var framePerSecond = 1/that.commonFps;
 				sprite.velocityX = that.jumperPixEverySec * framePerSecond;
-
 				if(that.currentPointer > 6 && that.currentPointer < 19){
 					sprite.left +=  sprite.velocityX;
 				}else{
@@ -385,8 +385,8 @@ function Game(){
 			if(sprite.moveTimer.isExpired()){
 				// 起点和顶点重新定位
 				if(that.currentPointer === 12){
-					that.runner.top = that.rolesHalfLeft;
-					that.runner.left = that.rolesHalfTop;
+					that.jumper.top = that.rolesHalfTop;
+					that.jumper.left = that.rolesHalfLeft;
 				}
 				if(that.currentPointer === 24){
 					that.jumper.top = that.rolesInitialTop;
@@ -430,26 +430,26 @@ function Game(){
 
 	this.runnerRunActionBehavior = {
 		lastAdvanceTime:0,
-		changeFrequencyTime:80,
+		changeFrequencyTime:100,
 		updateAdvance:function(sprite){
 			if(that.currentPointer >= 0 && that.currentPointer < 6){
-				if(sprite.painter.cellsIndex >= 7){
+				if(sprite.painter.cellsIndex >= 3){
 					sprite.painter.cellsIndex = 0;
 				}
 			}
 			if(that.currentPointer >= 6 && that.currentPointer < 12){
-				if(sprite.painter.cellsIndex >= 14){
-					sprite.painter.cellsIndex = 8;
+				if(sprite.painter.cellsIndex >= 7){
+					sprite.painter.cellsIndex = 4;
 				}
 			}
 			if(that.currentPointer >= 12 && that.currentPointer < 18){
-				if(sprite.painter.cellsIndex >= 21){
-					sprite.painter.cellsIndex = 16;
+				if(sprite.painter.cellsIndex >= 11){
+					sprite.painter.cellsIndex = 8;
 				}
 			}
 			if(that.currentPointer >= 18 && that.currentPointer < 24){
-				if(sprite.painter.cellsIndex >= 28){
-					sprite.painter.cellsIndex = 24;
+				if(sprite.painter.cellsIndex >= 15){
+					sprite.painter.cellsIndex = 12;
 				}
 			}
 		},
@@ -477,12 +477,12 @@ function Game(){
 				var framePerSecond = 1/that.commonFps;
 				sprite.velocityX = that.runnerHPixEverySec * framePerSecond;
 				sprite.velocityY = that.runnerVPixEverySec * framePerSecond;
-				if(that.currentPointer > 6 && that.currentPointer < 19){
-					sprite.left +=  sprite.velocityX;
-				}else{
-					sprite.left -=  sprite.velocityX;
-				}
 
+				if(that.currentPointer > 6 && that.currentPointer < 19){
+					sprite.left += sprite.velocityX;
+				}else{
+					sprite.left -= sprite.velocityX;
+				}
 				if(that.currentPointer > 0 && that.currentPointer < 13){
 					sprite.top -= sprite.velocityY;
 				}else{
@@ -490,10 +490,6 @@ function Game(){
 				}
 			}
 			if(sprite.runTimer.isExpired()){
-				if(that.currentPointer === 12){
-					that.runner.top = that.rolesHalfTop;
-					that.runner.left = that.rolesHalfLeft;
-				}
 				if(that.currentPointer === 24){
 					that.runner.top = that.rolesInitialTop;
 					that.runner.left = that.rolesInitialLeft;
@@ -529,8 +525,8 @@ Game.prototype = {
 		this.selectRole(function(){
 			that.coverAni(that.selectRoleWrap,-560,that.coverSlideTime,gameEasing.easeIn,function(){
 				document.body.removeChild(that.gameCoverWrap);
-				that.cutDown(3,function(){
-					document.body.removeChild(that.gameCutDown);
+				that.cutDown(that.cutDownTime,function(){
+					// document.body.removeChild(that.gameCutDown);
 					that.startGame();
 				});
 			})
@@ -542,7 +538,7 @@ Game.prototype = {
 		this.playSound(this.startSound);
 
 		this.confirmRoleWH();
-		this.clearPause();
+		this.pauseGame();
 		this.createResumeLoc();
 		this.rollDiceShow(true);
 
@@ -550,18 +546,23 @@ Game.prototype = {
 		this.startShakeDice();
 		this.closeResume();
 
+		// show fps
+		this.showFps();
+		// window blur/focus
+		this.windowFocus();
+
 		window.requestAnimationFrame(function(time){
 			that.animate.call(that,time);
 		});
 	},
 	animate:function(time){
 		var that = this;
-		if(this.pauseGame){
+		if(this.pauseGameTag){
 			setTimeout(function(){
 				window.requestAnimationFrame(function(time){
 					that.animate.call(that,time);
 				})
-			},100)
+			},200)
 		}else{
 			this.commonFps = this.fps(time);
 			this.drawSprites(time);
@@ -602,22 +603,10 @@ Game.prototype = {
 			that.diceRotateReset();
 			that.diceDetailNum(that.diceTotal);
 			that.rollDiceShow();
-			// that.diceTotals();
 			// 确定每次掷完筛子后人物的位置
 			that.lastRunnerLoc();
 			that.diceStartRotate()
 		},false)
-		// pb.init("roll-dice-btn").addEventListener("click",function(){
-		// 	if(that.pauseGame) return;
-		// 	that.playSound(that.diceSound);
-		// 	that.diceRotateReset();
-		// 	that.diceOneNum = Math.floor(Math.random() * 6);
-		// 	that.diceTwoNum = Math.floor(Math.random() * 6);
-		// 	that.diceTotals();
-		// 	// 确定每次掷完筛子后人物的位置
-		// 	that.lastRunnerLoc();
-		// 	that.diceStartRotate()
-		// },false)
 	},
 	rollDiceShow:function(show){
 		var that = this;
@@ -693,6 +682,7 @@ Game.prototype = {
 				cutInterVal = setTimeout(function(){
 					if(i === time){
 						clearTimeout(cutInterVal);
+						$gameCutDown.className = "game-cutdown hide";
 						callback();
 						return false;
 					}
@@ -705,21 +695,12 @@ Game.prototype = {
 	},
 	drawSprites:function(time){
 		context.clearRect(0,0,this.canvasWidth,this.canvasHeight);
-		// embelish
-		// this.drawEmbelish();
-		// walkMap
-		// this.drawWalkMap();
 		// dice
 		this.drawDice(time);
 		// roles
 		this.updateRoles(time);
-		
-		// 离屏canvas（人物等主要元素）
-		// this.offScreenCanvasMain();
 	},
 	createSprites:function(){
-		// walkMap
-		// this.createWalkMap();
 		this.drawElements();
 		// roles
 		this.createRoles();
@@ -728,21 +709,6 @@ Game.prototype = {
 		// 离屏canvas，分层canvas
 		this.offScreenCanvasBg();
 	},
-	// createWalkMap:function(){
-	// 	this.mapBlockLeft = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["map-block-left.png"]));
-	// 	this.mapBlockTop = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["map-block-top.png"]));
-	// 	this.mapBlockBottom = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["map-block-bottom.png"]));
-	// 	this.mapBlockRight = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["map-block-right.png"]));
-
-	// 	this.mapBlockBlue = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["block-blue.png"]));
-	// 	this.mapBlockRed = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["block-red.png"]));
-	// 	this.mapBlockGrey = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["block-grey.png"]));
-	// 	this.mapBlockWhite = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["block-white.png"]));
-	// 	this.mapBlockGreen = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["block-green.png"]));
-	// 	this.mapBlockWBlue = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["block-wblue.png"]));
-	// 	this.mapBlockBlack = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["block-black.png"]));
-	// 	this.mapTopCorner = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["map-block-top-corner.png"]));
-	// },
 	createDice:function(){
 		this.diceOne = new Sprite("diceThree",new SpriteSheets(Config.imgSource[0],
 																this.findCellData("diceThree",Config.jsonObj["main"])),
@@ -774,32 +740,6 @@ Game.prototype = {
 		this.runner.top = this.rolesInitialTop;
 		this.runner.runTimer = new AnimationTimer(this.runnerAniTime);
 	},
-	// createEmbelish:function(){
-	// 	// 水平围栏
-	// 	this.enclosureHorizontal = new Sprite("enclosure-horizontal",new drawStaticImage(Config.imgSource[1],
-	// 																			Config.jsonObj["embellish"]["enclosure-horizontal.png"]));
-	// 	// 垂直围栏
-	// 	this.enclosureVertical = new Sprite("enclosure-vertical",new drawStaticImage(Config.imgSource[1],
-	// 																			Config.jsonObj["embellish"]["enclosure-vertical.png"]));
-	// 	// 大树1
-	// 	this.tree1 = new Sprite("tree1",new drawStaticImage(Config.imgSource[1],Config.jsonObj["embellish"]["tree-1.png"]));
-	// 	// 大树2
-	// 	this.tree2 = new Sprite("tree2",new drawStaticImage(Config.imgSource[1],Config.jsonObj["embellish"]["tree-2.png"]));
-	// 	this.tree2.top = this.canvasHeight - 120;
-	// 	// 帐篷
-	// 	this.tent = new Sprite("tent",new drawStaticImage(Config.imgSource[1],Config.jsonObj["embellish"]["tent.png"]));
-	// 	this.tent.left = this.canvasWidth - 160;
-	// 	// 柴火（两堆）
-	// 	this.firewood = new Sprite("firewood",new drawStaticImage(Config.imgSource[1],Config.jsonObj["embellish"]["firewood.png"]));
-	// 	this.firewood.top = 160;
-	// 	// 木桶（两堆）
-	// 	this.cask = new Sprite("cask",new drawStaticImage(Config.imgSource[1],Config.jsonObj["embellish"]["cask.png"]));
-	// 	this.cask.top = 120;
-	// 	// chair
-	// 	this.chair = new Sprite("chair",new drawStaticImage(Config.imgSource[1],Config.jsonObj["embellish"]["chair.PNG"]));
-	// 	this.chair.left = 50;
-	// 	this.chair.top = 400;
-	// },
 	drawDice:function(time){
 		this.diceOne.paint(context);
 		this.diceOne.update(context,time);
@@ -829,7 +769,7 @@ Game.prototype = {
  		this.mapOffContext.save();
 		this.mapOffContext.translate(this.mapRealHorizontal,0);
 		this.mapOffContext.rotate(45 * Config.deg);
-		this.mapOffContext.transform(1,-this.matrixSlope,-this.matrixSlope,1,0,0);
+		this.mapOffContext.transform(1,-Math.tan(this.slopeAngle),-Math.tan(this.slopeAngle),1,0,0);
 
 		for(var i = 0;i < 24;i++){
 			if(i === 0){
@@ -996,8 +936,6 @@ Game.prototype = {
 		this.jumperOffCanvas.width = 150;
 		this.jumperOffCanvas.height = 150;
 
-		// this.jumper.top = this.rolesInitialTop;
-		// this.jumper.left = this.rolesInitialLeft;
 		this.jumper.jumpTimer = new AnimationTimer(this.jumperJumpAniTime);
 		this.jumper.fallTimer = new AnimationTimer(this.jumperJumpAniTime);
 		this.jumper.moveTimer = new AnimationTimer(this.jumperMoveAniTime);
@@ -1011,9 +949,6 @@ Game.prototype = {
 		this.runnerOffCanvas.height = 83;
 
 		this.runner.runTimer = new AnimationTimer(this.runnerAniTime);
-		
-		// this.runner.left = this.rolesInitialLeft;
-		// this.runner.top = this.rolesInitialTop;
 	},
 	updateRoles:function(time){
 		this.currentRole === "jumper" ? this.drawJumper(time) : this.drawRunner(time);
@@ -1035,49 +970,6 @@ Game.prototype = {
 		this.drawCask();
 		this.drawChair();
 		this.drawRoles()
-		// // 围栏
-		// this.enclosureHorizontal.top = 0;
-		// for(var i = 0;i < 8;i++){
-		// 	this.enclosureHorizontal.left = i * 132 + 11;
-		// 	this.enclosureHorizontal.paint(context);
-		// }
-		// this.enclosureHorizontal.top = this.canvasHeight - 30;
-		// for(var i = 0;i < 8;i++){
-		// 	this.enclosureHorizontal.left = i * 132 + 11;
-		// 	this.enclosureHorizontal.paint(context);
-		// }
-		// this.enclosureVertical.left = 0;
-		// for(var i = 0;i< 4 ;i++){
-		// 	this.enclosureVertical.top = i * 170;
-		// 	this.enclosureVertical.paint(context);
-		// }
-		// this.enclosureVertical.left = this.canvasWidth - 15;
-		// for(var i = 0;i< 4 ;i++){
-		// 	this.enclosureVertical.top = i * 170;
-		// 	this.enclosureVertical.paint(context);
-		// }
-
-		// // 各种静态装饰物
-		// // 树1和树2
-		// this.tree1.paint(context);
-		// for(var i = 0;i < 2;i++){
-		// 	this.tree2.left = this.canvasWidth - 95 * (i+1);
-		// 	this.tree2.paint(context);
-		// }
-		// // 帐篷
-		// this.tent.paint(context);
-		// // 柴火
-		// for(var i = 0;i < 2;i++){
-		// 	this.firewood.left = this.canvasWidth - 32 * 2 * (i+1);
-		// 	this.firewood.paint(context);
-		// }
-		// // 木桶
-		// for(var i = 0;i < 2;i++){
-		// 	this.cask.left = (i+1) * 60;
-		// 	this.cask.paint(context);
-		// }
-		// // 椅子
-		// this.chair.paint(context);
 	},
 	offScreenCanvasBg:function(){
 		// walkMap（行走地图）
@@ -1099,12 +991,6 @@ Game.prototype = {
 		// chair（椅子）
 		canvasBgContext.drawImage(this.chairOffCanvas,50,400);
 	},
-	// offScreenCanvasMain:function(){
-	// 	// jumper
-	// 	context.drawImage(this.jumperOffCanvas,this.rolesInitialLeft,this.rolesInitialTop);
-	// 	// runner
-	// 	context.drawImage(this.runnerOffCanvas,this.rolesInitialLeft,this.rolesInitialTop);
-	// },
 	selectRole:function(callback){
 		var $roleObj = this.roleListAll,
 			len = $roleObj.length,
@@ -1132,18 +1018,18 @@ Game.prototype = {
 	},
 	confirmRoleWH:function(){
 		if(this.role === "runner"){
-			this.roleWidth = 50;
-			this.roleHeight = 30;
+			this.roleWidth = 55;
+			this.roleHeight = 80;
 		}else {
 			this.roleWidth = 150;
-			this.roleHeight = 100;
+			this.roleHeight = 150;
 		}
 		// 人物初始位置
 		this.rolesInitialLeft = this.canvasWidth / 2 - this.roleWidth / 2;
-		this.rolesInitialTop = this.walkMapTop + this.mapVertical * 2 - this.roleHeight - this.verticalPacePix;
+		this.rolesInitialTop = this.walkMapTop + this.mapRealVertical * 2 - this.roleHeight - this.verticalPacePix;
 		// 人物在顶点的位置
 		this.rolesHalfLeft = this.rolesInitialLeft;
-		this.rolesHalfTop = this.rolesInitialTop - 12 * this.verticalPacePix;
+		this.rolesHalfTop = this.rolesInitialTop - 2 * this.mapVertical;
 	},
 	showBlackRoom:function(){
 		var that = this;
@@ -1193,9 +1079,9 @@ Game.prototype = {
 				that.showResume("shortCutKey","resume-json/shortCut-key.json",function(res){
 					that.shortCutShowResume();
 					that.pokerTipsWrap.innerHTML = res.info;
-				});
+				},true);
 			}else{
-				that.pokerTipsWrap.innerHTML = "你猜错啦,下次再来吧！！！";
+				that.pokerTipsWrap.innerHTML = "你猜错啦,手气不佳呀，下次再来吧！么么哒~";
 			}
 		},500)
 		setTimeout(function(){
@@ -1215,38 +1101,34 @@ Game.prototype = {
 		var that = this;
 		switch(index){
 			case this.resumeArr[0]:
-			this.gameResumeDetail.className = "game-resume-detail zoomIn animated";
-			this.showResume("one","resume-json/one.json",function(res){
-				that.resumeOne.call(that,res);
-			});
-			break;
+				this.showResume("one","resume-json/one.json",function(res){
+					that.resumeOne.call(that,res);
+				});
+				break;
 			case this.resumeArr[1]:
-			this.gameResumeDetail.className = "game-resume-detail zoomIn animated";
-			this.showResume("two","resume-json/two.json",function(res){
-				that.resumeTwo.call(that,res);
-			});
-			break;
+				this.showResume("two","resume-json/two.json",function(res){
+					that.resumeTwo.call(that,res);
+				});
+				break;
 			case this.resumeArr[2]:
-			this.gameResumeDetail.className = "game-resume-detail zoomIn animated";
-			this.showResume("three","resume-json/three.json",function(res){
-				that.resumeThree.call(that,res);
-			});
-			break;
+				this.showResume("three","resume-json/three.json",function(res){
+					that.resumeThree.call(that,res);
+				});
+				break;
 			case this.resumeArr[3]:
-			this.gameResumeDetail.className = "game-resume-detail zoomIn animated";
-			this.showResume("four","resume-json/four.json",function(res){
-				that.resumeFour.call(that,res);
-			});
-			break;
+				this.showResume("four","resume-json/four.json",function(res){
+					that.resumeFour.call(that,res);
+				});
+				break;
 			case 2:
-			this.showMiniGame();
-			break;
+				this.showMiniGame();
+				break;
 			case 6:
-			this.showBlackRoom();
-			break;
+				this.showBlackRoom();
+				break;
 			default:
-			this.rollDiceShow(true);
-			break;
+				this.rollDiceShow(true);
+				break;
 		}
 	},
 	shortCutShowResume:function(){
@@ -1258,28 +1140,24 @@ Game.prototype = {
 			switch(code){
 				case 89:
 					// Y
-					that.gameResumeDetail.className = "game-resume-detail zoomIn animated";
 					that.showResume("one","resume-json/one.json",function(res){
 						that.resumeOne.call(that,res)
 					});
 					break;
 				case 80:
 					// P
-					that.gameResumeDetail.className = "game-resume-detail zoomIn animated";
 					that.showResume("two","resume-json/two.json",function(res){
 						that.resumeTwo.call(that,res);
 					});
 					break;
 				case 66:
 					// B
-					that.gameResumeDetail.className = "game-resume-detail zoomIn animated";
 					that.showResume("three","resume-json/three.json",function(res){
 						that.resumeThree.call(that,res);
 					});
 					break;
 				case 78:
 					// N
-					that.gameResumeDetail.className = "game-resume-detail zoomIn animated";
 					that.showResume("four","resume-json/four.json",function(res){
 						that.resumeFour.call(that,res);
 					});
@@ -1290,7 +1168,12 @@ Game.prototype = {
 			}
 		},false)
 	},
-	showResume:function(name,url,callback){
+	showResume:function(name,url,callback,hide){
+		if(!hide){
+			this.gameResumeDetail.className = "game-resume-detail zoomIn animated";
+			// resume sound
+			this.playSound(this.resumeSound);
+		}
 		// name 只是个标识
 		var xmlHttp = new XMLHttpRequest() || new ActiveXObject("Microsoft.XMLHTTP");
 		xmlHttp.onreadystatechange = function(){
@@ -1332,6 +1215,8 @@ Game.prototype = {
 			that.shortCutView = false;
 			that.rollDiceShow(true);
 			this.parentNode.className = "game-resume-detail hide";
+			// 清空原有的内容
+			that.gameResumeWrap.innerHTML = "";
 		},false)
 	},
 	getSprites:function(name){
@@ -1356,10 +1241,6 @@ Game.prototype = {
 	},
 	findCellData:function(name,jsonObj){
 		var cellDatas = [];
-		// jsonCells中存在，则直接返回
-		// if(name in this.jsonCells){
-		// 	return this.jsonCells[name];
-		// }
 		for(var i in jsonObj){
 			if(i.indexOf(name) !== -1){
 				cellDatas.push(jsonObj[i]);
@@ -1368,19 +1249,6 @@ Game.prototype = {
 		this.jsonCells[name] = cellDatas;
 		return cellDatas;
 	},
-	clearPause:function(){
-		var that = this;
-		document.addEventListener("keydown",function(e){
-			var code = e.keyCode;
-			if(code === 13){
-				that.pauseGame = false;
-			}
-		})
-	},
-	// diceTotals:function(){
-	// 	this.diceTotal = this.diceOneNum + this.diceTwoNum + 2;
-	// 	console.log(this.diceTotal)
-	// },
 	currentRunnerLoc:function(){
 		this.currentPointer++;
 		if(this.currentPointer === 25){
@@ -1417,6 +1285,51 @@ Game.prototype = {
 		this.lastFrameTime = time;
 		return fps; 
 	},
+	showFps:function(){
+		var that = this;
+		this.fpsShow.innerHTML = this.commonFps.toFixed(0) + " fps";
+		setTimeout(function(){
+			that.showFps.call(that)
+		},300);
+	},
+	pauseGame:function(){
+		var that = this;
+		document.addEventListener("keydown",function(e){
+			var code = e.keyCode;
+			// Space
+			if(code === 32){
+				that.togglePaused();
+			}
+		})
+	},
+	togglePaused:function(){
+		var now = +new Date();
+		this.pauseGameTag = !this.pauseGameTag;
+
+		if(this.pauseGameTag){
+			// 记录开始暂停的时间点
+			this.pauseStartTime = now;
+		}else{
+			this.lastFrameTime += (now - this.pauseStartTime);
+		}
+	},
+	// 窗口失去/获取焦点时的暂停处理
+	windowFocus:function(){
+		var that = this;
+		window.onblur = function(){
+			if(!that.pauseGameTag){
+				that.togglePaused();
+			}
+		}
+		window.onfocus = function(){
+			if(that.pauseGameTag){
+				// 2s后继续
+				that.cutDown(2,function(){
+					that.togglePaused();
+				});
+			}
+		}
+	},
 	// 上下滑动
 	coverAni:function(obj,lastTop,aniTime,aniWay,fn){
 		var oldTop = obj.style.top ? parseInt(obj.style.top) : 0,
@@ -1441,17 +1354,6 @@ Game.prototype = {
 			}
 		},changeTime)
 	}
-	// drawGround:function(){
-	// 	this.grassland = new Sprite("grassland",new SpriteSheets(Config.imgSource[1],
-	// 															this.findCellData("grassland.png",Config.jsonObj["embellish"])))
-	// 	for(var i = 0;i < this.grasslandY;i++){
-	// 		for(var j = 0;j < this.grasslandX;j++){
-	// 			this.grassland.left = j * Config.grassWidth;
-	// 			this.grassland.top = i * Config.grassHeight;
-	// 			this.grassland.paint(context);
-	// 		}
-	// 	}
-	// },
 }
 var gameEasing = {
 	liner:function(p){

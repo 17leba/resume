@@ -49,6 +49,12 @@ body{
   left: 0;
   top:0;
 }
+#fps-show{
+  position: absolute;
+  left:0;
+  top:-20px;
+  font-size: 12px;
+}
 .game-cover-img{
 	position: relative;
 	width: 310px;
@@ -130,8 +136,8 @@ body{
 }
 .role-list.boy p{
   width: 51px;
-  height: 140px;
-	background: url(../images/sub-img.png) no-repeat -420px -483px;
+  height: 138px;
+	background: url(../images/sub-img.png) no-repeat -420px -485px;
 }
 .role-list.girl p{
   width: 49px;
@@ -139,8 +145,8 @@ body{
 	background: url(../images/sub-img.png) no-repeat -420px -623px;
 }
 .role-list.runner p{
-  width: 66px;
-  height: 123px;
+  width: 80px;
+  height: 124px;
 	background: url(../images/sub-img.png) no-repeat -420px -360px;
 }
 .game-cutdown{
@@ -305,11 +311,15 @@ body{
   margin-bottom: 20px;
 }
 .poker-tips-wrap{
+  width: 400px;
+  min-height: 30px;
   position: absolute;
   z-index: 10;
   left:50%;
   top:50%;
-  transform:translate(-50%,-50%);
+  margin-left: -200px;
+  margin-top: -30px;
+  /*transform:translate(-50%,-50%);*/
   padding: 20px 10px;
   border: 1px solid #333;
   color: #fff;
