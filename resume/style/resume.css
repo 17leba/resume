@@ -155,6 +155,7 @@ body{
 	top:50%;
 	width: 55px;
 	height: 63px;
+  z-index: 1002;
 	-webkit-transform:translate(-50%,-50%);
 	-moz-transform:translate(-50%,-50%);
 	transform:translate(-50%,-50%);
