@@ -12,6 +12,12 @@
 	<script src="js/main-min.js"></script>
 </head>
 <body>
+	<audio src="sounds/cutDown.mp3" id="mp3-cutdown" preload="auto"></audio>
+	<audio src="sounds/start.mp3" id="mp3-start" preload="auto"></audio>
+	<audio src="sounds/dice.mp3" id="mp3-dice" preload="auto"></audio>
+	<audio src="sounds/jumper.mp3" id="mp3-jumper" preload="auto"></audio>
+	<audio src="sounds/runner.mp3" id="mp3-runner" preload="auto"></audio>
+	<audio src="sounds/resume.mp3" id="mp3-resume" preload="auto"></audio>
 	<div class="canvas-main">
 		<canvas id="myCanvas-bg" width="1080" height="540">
 		</canvas>
@@ -81,7 +87,7 @@
 	</div>
 	<div class="game-black-room hide"></div>
 	<script>
-		var canvas,context;
+		var canvas,context,canvasBg,canvasBgContext;
 		document.addEventListener("DOMContentLoaded",function(){
 			canvas = document.getElementById("myCanvas");
 			context = canvas.getContext("2d"); 
@@ -90,10 +96,8 @@
 			canvasBgContext = canvasBg.getContext("2d");
 			
 			loadSources.init(Config.sourceList,function(){
-				// document.getElementById("load-precent-nums").className = "hide";
 				document.querySelector(".game-cover").removeChild(document.querySelector(".load-precent-wrap"));
 				document.querySelector(".start-game-btn").className = "start-game-btn";
-				// context.clearRect(0,0,canvas.width,canvas.height);
 				var game = new Game();
 				game.start();
 			});
