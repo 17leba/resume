@@ -1,4 +1,4 @@
-/*
+ï»¿/*
  * grunt
  * http://gruntjs.com/
  *
@@ -21,6 +21,10 @@ module.exports = function(grunt) {
       cssmin: {
         files: ['resume/style/*.css'],
         tasks: ['cssmin']
+      },
+      imagemin:{
+        files:['resume/images/**/*.{png,jpg,jpeg,gif}'],
+        tasks:['imagemin']
       }
     },
     concat: {
@@ -31,7 +35,7 @@ module.exports = function(grunt) {
     uglify: {
       options: {
         mangle: {
-          // ²»Ñ¹Ëõrequire¹Ø¼ü×Ö
+          // ä¸å‹ç¼©requireå…³é”®å­—
           except: ['require']
         }
       },
@@ -44,13 +48,14 @@ module.exports = function(grunt) {
             src: ['*.js'],
             dest: 'resume/js/',
             ext: '-min.js'
-          }, {
-            expand: true,
-            cwd: 'static/javascript/',
-            src: ['*.js'],
-            dest: 'static/js/',
-            ext: '.js'
-          }
+          }, 
+          // {
+          //   expand: true,
+          //   cwd: 'static/javascript/',
+          //   src: ['*.js'],
+          //   dest: 'static/js/',
+          //   ext: '.js'
+          // }
         ]
       }
     },
@@ -64,21 +69,14 @@ module.exports = function(grunt) {
       }
     },
     imagemin: {
-      png: {
-        options: {
-          optimizationLevel: 7
-        },
-        files: {
-          'resume/img/dice.png': 'resume/images/dice.png',
-          'resume/img/embellish.png': 'resume/images/embellish.png',
-          'resume/img/game-cover.png': 'resume/images/game-cover.png',
-          'resume/img/grass-bg.png': 'resume/images/grass-bg.png',
-          'resume/img/jumpers.png': 'resume/images/jumpers.png',
-          'resume/img/main.png': 'resume/images/main.png',
-          'resume/img/runners.png': 'resume/images/runners.png',
-          'resume/img/sub-img.png': 'resume/images/sub-img.png',
-        }
-      },
+      dynamic:{
+        files:[{
+          expand:true,
+          cwd:'resume/images/',
+          src:['**/*.{png,jpg,jpeg,gif}'],
+          dest:'resume/img/'
+        }]
+      }
     }
   });
 
