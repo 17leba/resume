@@ -243,6 +243,7 @@ function Game(){
 		},
 		execute:function(sprite,context,time){
 			var self = this;
+
 			if(!that.startShakeTwoDice) return;
 			if(sprite.diceAnimationTimer.isExpired()){
 				that.startShakeTwoDice = false;
@@ -277,8 +278,8 @@ function Game(){
 	this.diceTwoMoveBehaivor = {
 		execute:function(sprite,context,time){
 			if(sprite.diceAnimationTimer.isRunning()){
+				// console.log(sprite.diceAnimationTimer.getElapsedTime());
 				that.diceStopShake = false;
-
 				var framePerSecond = 1/that.commonFps;
 				sprite.velocityX = that.diceTwoPixPerSec * framePerSecond;
 				sprite.velocityY = (that.diceTwoYStartSpeed + Config.GRAVITY_FORCE * (sprite.diceAnimationTimer.getElapsedTime() / 1000)) * that.pixPerMeter * framePerSecond;
@@ -546,17 +547,43 @@ Game.prototype = {
 	animate:function(time){
 		var that = this;
 		if(this.pauseGameTag){
+			this.togglePauseTimer();
 			setTimeout(function(){
 				window.requestAnimationFrame(function(time){
 					that.animate.call(that,time);
 				})
 			},200)
 		}else{
+			this.togglePauseTimer();
 			this.commonFps = this.fps(time);
 			this.drawSprites(time);
 			window.requestAnimationFrame(function(time){
 				that.animate.call(that,time);
 			});
+		}
+	},
+	togglePauseTimer:function(){
+		var diceOneAniTimer = this.diceOne.diceAnimationTimer,
+			diceTwoAniTimer = this.diceTwo.diceAnimationTimer,
+			runnerAniTimer = this.runner.runTimer,
+			jumperTAniTimer = this.jumper.jumpTimer,
+			jumperBAniTimer = this.jumper.fallTimer,
+			jumperMAniTimer = this.jumper.moveTimer;
+		if(this.pauseGameTag && !diceOneAniTimer.isPause()){
+			diceOneAniTimer.pause();
+			diceTwoAniTimer.pause();
+			jumperTAniTimer.pause();
+			jumperMAniTimer.pause();
+			jumperBAniTimer.pause();
+			runnerAniTimer.pause();
+		}
+		if(!this.pauseGameTag && diceOneAniTimer.isPause()){
+			diceOneAniTimer.unpause();
+			diceTwoAniTimer.unpause();
+			jumperTAniTimer.unpause();
+			jumperMAniTimer.unpause();
+			jumperBAniTimer.unpause();
+			runnerAniTimer.unpause();
 		}
 	},
 	startShakeDice:function(){
@@ -916,29 +943,6 @@ Game.prototype = {
 		this.chairOffCanvas.height = 64;
 		chair.paint(this.chairOffContext);
 	},
-	drawRoles:function(){
-		// jumpers
-		this.jumper = new Sprite("jumper",new SpriteSheets(Config.imgSource[2],
-																this.findCellData(this.role,Config.jsonObj["jumpers"])),this.jumperBehavior);
-		this.jumperOffCanvas = document.createElement("canvas");
-		this.jumperOffContext = this.jumperOffCanvas.getContext("2d");
-		this.jumperOffCanvas.width = 150;
-		this.jumperOffCanvas.height = 150;
-
-		this.jumper.jumpTimer = new AnimationTimer(this.jumperJumpAniTime);
-		this.jumper.fallTimer = new AnimationTimer(this.jumperJumpAniTime);
-		this.jumper.moveTimer = new AnimationTimer(this.jumperMoveAniTime);
-		
-		// runners
-		this.runner = new Sprite("runner",new SpriteSheets(Config.imgSource[3],
-																this.findCellData(this.role,Config.jsonObj["runners"])),this.runnerBehavior);
-		this.runnerOffCanvas = document.createElement("canvas");
-		this.runnerOffContext = this.runnerOffCanvas.getContext("2d");
-		this.runnerOffCanvas.width = 55;
-		this.runnerOffCanvas.height = 80;
-
-		this.runner.runTimer = new AnimationTimer(this.runnerAniTime);
-	},
 	updateRoles:function(time){
 		this.currentRole === "jumper" ? this.drawJumper(time) : this.drawRunner(time);
 	},
@@ -957,8 +961,7 @@ Game.prototype = {
 		this.drawTent();
 		this.drawFireWood();
 		this.drawCask();
-		this.drawChair();
-		this.drawRoles()
+		this.drawChair()
 	},
 	offScreenCanvasBg:function(){
 		// walkMap（行走地图）
