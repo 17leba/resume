@@ -14,6 +14,8 @@ function Game(){
 	this.roleHeight = 0;
 	// 跳跃者是否开始动作 不跳跃时有动作
 	this.roleActionStart = true;
+	// 筛子是否停止投掷
+	this.diceStopShake = true;
 	// 倒计时 默认为3s
 	this.cutDownTime = 3;
 	// 当前是否进入了小黑屋
@@ -48,8 +50,6 @@ function Game(){
 	this.diceTwoNum = 0;
 	// 骰子总数
 	this.diceTotal = 0;
-	// 掷骰子跳跃进行时
-	this.allRunning = false;
 	// 行走地图倾斜角度
 	this.slopeAngle = Config.slopeAngle * Config.deg;
 	// 矩阵倾斜角度
@@ -104,12 +104,6 @@ function Game(){
 	this.startMoveAll = false;
 	// 每一步的移动
 	this.startMovePer = false;
-	// 人物是否在跑动
-	this.running = false;
-	// 人物是否在跳动
-	this.jumping = false;
-	// 人物结束跑动
-	this.endRun = false;
 	// 人物跳动到哪个格子
 	this.currentPointer = 0;
 	// 掷完筛子后人物跳到哪个格子上
@@ -283,6 +277,8 @@ function Game(){
 	this.diceTwoMoveBehaivor = {
 		execute:function(sprite,context,time){
 			if(sprite.diceAnimationTimer.isRunning()){
+				that.diceStopShake = false;
+
 				var framePerSecond = 1/that.commonFps;
 				sprite.velocityX = that.diceTwoPixPerSec * framePerSecond;
 				sprite.velocityY = (that.diceTwoYStartSpeed + Config.GRAVITY_FORCE * (sprite.diceAnimationTimer.getElapsedTime() / 1000)) * that.pixPerMeter * framePerSecond;
@@ -290,6 +286,8 @@ function Game(){
 				sprite.top += sprite.velocityY;
 			}
 			if(sprite.diceAnimationTimer.isExpired()){
+				that.diceStopShake = true;
+
 				sprite.diceAnimationTimer.stop();
 			}
 		}
@@ -552,7 +550,7 @@ Game.prototype = {
 				window.requestAnimationFrame(function(time){
 					that.animate.call(that,time);
 				})
-			},100)
+			},200)
 		}else{
 			this.commonFps = this.fps(time);
 			this.drawSprites(time);
@@ -1285,7 +1283,7 @@ Game.prototype = {
 		this.fpsShow.innerHTML = this.commonFps.toFixed(0) + " fps";
 		setTimeout(function(){
 			that.showFps.call(that)
-		},300);
+		},500);
 	},
 	pauseGame:function(){
 		var that = this;
@@ -1317,9 +1315,11 @@ Game.prototype = {
 			}
 		}
 		window.onfocus = function(){
+			var focusCutTime;
 			if(that.pauseGameTag){
-				// 2s后继续
-				that.cutDown(2,function(){
+				// 人物正在运动或者筛子正在投掷时需要有一个倒计时缓冲时间
+				focusCutTime = (!that.roleActionStart || !that.diceStopShake) ? 2 : 0;
+				that.cutDown(focusCutTime,function(){
 					that.togglePaused();
 				});
 			}
@@ -1329,12 +1329,11 @@ Game.prototype = {
 	coverAni:function(obj,lastTop,aniTime,aniWay,fn){
 		var oldTop = obj.style.top ? parseInt(obj.style.top) : 0,
 			changeTime = 16,
+			i = 1,
 			lastTop = parseInt(lastTop),
 			topGap = Math.abs(lastTop - oldTop),
 			step = topGap / (aniTime/changeTime),
-			precent,
-			i = 1,
-			coverInterVal;
+			precent,coverInterVal;
 
 		coverInterVal = setInterval(function(){
 			var originTop = obj.style.top ? parseInt(obj.style.top) : 0,
@@ -1350,6 +1349,7 @@ Game.prototype = {
 		},changeTime)
 	}
 }
+
 var gameEasing = {
 	liner:function(p){
 		return p;
