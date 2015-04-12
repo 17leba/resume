@@ -2,7 +2,7 @@
 function StopWatch(){
 	this.startTime = 0;
 	this.running = false;
-	this.pause = false;
+	this.paused = false;
 	this.startPauseTime = 0;
 	this.totalPauseTime = 0;
 	this.elapsed = 0;
@@ -16,7 +16,7 @@ StopWatch.prototype = {
 		this.totalPauseTime = 0;
 	},
 	stop:function(){
-		if(this.pause){
+		if(this.paused){
 			// 算出总共暂停了多长时间
 			this.unpause();
 		}
@@ -24,21 +24,21 @@ StopWatch.prototype = {
 		this.running = false;
 	},
 	pause:function(){
-		if(this.pause) return;
+		if(this.paused) return;
 		this.startPauseTime = +new Date();
-		this.pause = false;
+		this.paused = true;
 	},
 	unpause:function(){
-		if(!this.pause) return;
-		this.totalPauseTime = +new Date() - this.startPauseTime;
+		if(!this.paused) return;
+		this.totalPauseTime += (+new Date()) - this.startPauseTime;
 		this.startPauseTime = 0;
-		this.pause = false;
+		this.paused = false;
 	},
 	isRunning:function(){
 		return this.running;
 	},
 	isPause:function(){
-		return this.pause;
+		return this.paused;
 	},
 	getElapsedTime:function(){
 		if(this.running){
@@ -49,7 +49,7 @@ StopWatch.prototype = {
 	reset:function(){
 		this.startTime = 0;
 		this.running = false;
-		this.pause = false;
+		this.paused = false;
 		this.startPauseTime = 0;
 		this.totalPauseTime = 0;
 		this.elapsed = 0;
