@@ -7,15 +7,12 @@ function Game(){
 	this.jsonCells = {};
 	// 角色分类 两种 jumper and runner
 	this.currentRole = "jumper";
-	// 角色 boy or girl or runner 默认为boy
+	// 角色:boy or girl or runner
+    // 默认为 boy
 	this.role = "boy";
 	// 角色的宽高
 	this.roleWidth = 0;
 	this.roleHeight = 0;
-	// 跳跃者是否开始动作 不跳跃时有动作
-	this.roleActionStart = true;
-	// 筛子是否停止投掷
-	this.diceStopShake = true;
 	// 倒计时 默认为3s
 	this.cutDownTime = 3;
 	// 当前是否进入了小黑屋
@@ -36,15 +33,15 @@ function Game(){
 	// 骰子水平每秒移动像素
 	this.diceOnePixPerSec = (this.canvasWidth / 2) / (this.diceOneAniTime / 1000) + 100;
 	this.diceTwoPixPerSec = (this.canvasWidth / 2) / (this.diceTwoAniTime / 1000);
-	// 骰子是否结束转动
-	this.oneEndRotate = false;
-	this.twoEndRotate = false;
+	// 骰子是否停止投掷
+	this.diceStopShake = true;
 	// 摇骰子时鼠标的状态
 	this.mousedown = false;
 	this.mouseup = false;
 	// 开始丢骰子
 	this.startShakeOneDice = false;
 	this.startShakeTwoDice = false;
+	this.dicesIsHidden = true;
 	// 骰子最终数
 	this.diceOneNum = 0;
 	this.diceTwoNum = 0;
@@ -56,14 +53,10 @@ function Game(){
 	this.matrixSlope = 45 * Config.deg - Config.slopeAngle * Config.deg;
 
 	// 行走地图的真实高度和宽度（比行走图多一格）
-	// this.mapRealHorizontal = (60 * 7 * Math.tan(this.matrixSlope) + 60 * 7 * (1 / Math.cos(this.matrixSlope))) * Math.SQRT2 / 2;
-	// this.mapRealVertical = this.mapRealHorizontal * Math.tan(this.slopeAngle);
 	this.mapRealHorizontal = 60 * 7 * Math.cos(this.matrixSlope) / Math.cos(this.slopeAngle);
 	this.mapRealVertical = this.mapRealHorizontal * Math.tan(this.matrixSlope); 
 
 	// 行走地图宽度和高度（1/2）
-	// this.mapHorizontal = (60 * 6 * Math.tan(this.matrixSlope) + 60 * 6 * (1 / Math.cos(this.matrixSlope))) * Math.SQRT2 / 2;
-	// this.mapVertical = this.mapHorizontal * Math.tan(this.slopeAngle);
 	this.mapHorizontal = 60 * 6 * Math.cos(this.matrixSlope) / Math.cos(this.slopeAngle);
 	this.mapVertical = this.mapHorizontal * Math.tan(this.matrixSlope);
 
@@ -87,31 +80,37 @@ function Game(){
 	// 跳跃高度为1.5倍的两格中心点的高度
 	// 根据 vt + 0.5 * gt² = s (加速度方向为负)公式求出：
 	// 向上跳跃时和下降时的初始速度（向上行走）
-	this.jumperLeftUpSpeed = (this.jumperGridMeter * 2 + 0.5 * Config.GRAVITY_FORCE * Math.pow(this.jumperJumpAniTime / 1000,2)) / (this.jumperJumpAniTime / 1000);
-	this.jumperLeftDownSpeed = (this.jumperGridMeter * 1.1 - 0.5 * Config.GRAVITY_FORCE * Math.pow(this.jumperJumpAniTime / 1000,2)) / (this.jumperJumpAniTime / 1000);
+	this.jumperLeftUpSpeed = (this.jumperGridMeter * 2.0 + 0.5 * Config.GRAVITY_FORCE * Math.pow(this.jumperJumpAniTime / 1000,2)) / (this.jumperJumpAniTime / 1000);
+	this.jumperLeftDownSpeed = (this.jumperGridMeter * 1.0 - 0.5 * Config.GRAVITY_FORCE * Math.pow(this.jumperJumpAniTime / 1000,2)) / (this.jumperJumpAniTime / 1000);
 	// 向上跳跃时和下降时的初始速度（向下行走）
-	this.jumperRightUpSpeed = (this.jumperGridMeter * 1 + 0.5 * Config.GRAVITY_FORCE * Math.pow(this.jumperJumpAniTime / 1000,2)) / (this.jumperJumpAniTime / 1000);
-	this.jumperRightDownSpeed = (this.jumperGridMeter * 2.3 - 0.5 * Config.GRAVITY_FORCE * Math.pow(this.jumperJumpAniTime / 1000,2)) / (this.jumperJumpAniTime / 1000);
+	this.jumperRightUpSpeed = (this.jumperGridMeter * 1.0 + 0.5 * Config.GRAVITY_FORCE * Math.pow(this.jumperJumpAniTime / 1000,2)) / (this.jumperJumpAniTime / 1000);
+	this.jumperRightDownSpeed = (this.jumperGridMeter * 2.0 - 0.5 * Config.GRAVITY_FORCE * Math.pow(this.jumperJumpAniTime / 1000,2)) / (this.jumperJumpAniTime / 1000);
 
 	// 跑步者每一格的时间
 	this.runnerAniTime = 300;
 	// 跑步者水平速度（每秒水平移动多少像素）
 	this.runnerHPixEverySec = Math.floor(this.horizontalPacePix / (this.runnerAniTime / 1000));
 	this.runnerVPixEverySec = this.runnerHPixEverySec * Math.tan(this.matrixSlope);
-	// 开始跳跃
-	this.startJump = false;
-	// 开始移动
-	this.startMoveAll = false;
-	// 每一步的移动
-	this.startMovePer = false;
+	// 角色是否正在移动
+	this.roleIsMoving = false;
 	// 人物跳动到哪个格子
 	this.currentPointer = 0;
-	// 掷完筛子后人物跳到哪个格子上
+	// 掷完骰子后人物跳到哪个格子上
 	this.lastPointer = 0;
 	// 是否已经选择了扑克
 	this.pokerSelect = false;
+
 	// 是否正在快捷键查看简历
 	this.shortCutView = false;
+	this.coverSlideTime = 400;
+	this.lastFrameTime = 0;
+	this.lastFpsUpdateTime = 0;
+	this.pauseGameTag = false;
+
+	// 空格键触发暂停
+	this.spaceTriggerPause = false;
+	this.commonFps = 60;
+	this.resumeArr = [];
 	// selector
 	this.fpsShow = document.getElementById("fps-show");
 	this.selectRoleWrap = document.querySelector(".select-role-wrap");
@@ -119,6 +118,7 @@ function Game(){
 	this.roleListAll = document.querySelectorAll(".role-list");
 	this.gameCoverWrap = document.querySelector(".game-cover-wrap");
 	this.gameCover = document.querySelector(".game-cover");
+	this.precentWrap = document.querySelector(".load-precent-wrap");
 	this.startGameBtn = document.querySelector(".start-game-btn");
 	this.gameResumeDetail = document.querySelector(".game-resume-detail");
 	this.gameResumeWrap = document.querySelector(".game-resume-wrap");
@@ -144,12 +144,6 @@ function Game(){
 	this.runnerSound = document.getElementById("mp3-runner");
 	// resume sound
 	this.resumeSound = document.getElementById("mp3-resume");
-
-	this.coverSlideTime = 400;
-	this.lastFrameTime = 0;
-	this.pauseGameTag = false;
-	this.commonFps = 60;
-	this.resumeArr = [];
 
 	this.diceOnePaintBehaivor = {
 		lastAdvance:0,
@@ -196,7 +190,7 @@ function Game(){
 				sprite.left += sprite.velocityX;
 				sprite.top += sprite.velocityY;
 			}
-			if(sprite.diceAnimationTimer.isExpired()){
+			if(sprite.diceAnimationTimer.isExpired()){ 
 				sprite.diceAnimationTimer.stop();
 			}
 		}
@@ -230,21 +224,20 @@ function Game(){
 			}
 			return false;
 		},
-		startJumpMove:function(){
+		roleStartMove:function(){
 			that.currentRunnerLoc();
 			if(that.currentRole === "runner"){
 				that.runner.runTimer.start();
 			}else{
-				that.startJump = true;
 				that.jumper.jumpTimer.start();
 				that.jumper.moveTimer.start();
 			}
-			that.startMoveAll = true;
+			that.roleIsMoving = true;
 		},
 		execute:function(sprite,context,time){
 			var self = this;
-
 			if(!that.startShakeTwoDice) return;
+
 			if(sprite.diceAnimationTimer.isExpired()){
 				that.startShakeTwoDice = false;
 				sprite.painter.cellsIndex = that.diceTwoNum;
@@ -259,7 +252,7 @@ function Game(){
 					return;
 				}
 				var timeOut = setTimeout( function(){
-					self.startJumpMove();
+					self.roleStartMove();
 					that.diceLocReset();
 					clearTimeout(timeOut);
 				},800)
@@ -278,7 +271,6 @@ function Game(){
 	this.diceTwoMoveBehaivor = {
 		execute:function(sprite,context,time){
 			if(sprite.diceAnimationTimer.isRunning()){
-				// console.log(sprite.diceAnimationTimer.getElapsedTime());
 				that.diceStopShake = false;
 				var framePerSecond = 1/that.commonFps;
 				sprite.velocityX = that.diceTwoPixPerSec * framePerSecond;
@@ -288,7 +280,6 @@ function Game(){
 			}
 			if(sprite.diceAnimationTimer.isExpired()){
 				that.diceStopShake = true;
-
 				sprite.diceAnimationTimer.stop();
 			}
 		}
@@ -297,7 +288,6 @@ function Game(){
 
 	this.jumperJumpFallBehavior = {
 		direction:"up",
-		runnerVerticalSpeed : 0,
 		jumpDirection:function(){
 			if(that.currentPointer > 12 && that.currentPointer < 25){
 				this.direction = "down";
@@ -310,79 +300,110 @@ function Game(){
 			}
 		},
 		execute:function(sprite,context,time){
-			if(!that.startJump) return;
+			if(!that.roleIsMoving) return;
+
+			var framePerSecond = 1/that.commonFps;
 			if(sprite.jumpTimer.isRunning()){
 				// 确认方向
 				this.jumpDirection();
 
-				if(!sprite.jumpTimer.isExpired()){
-					var framePerSecond = 1/that.commonFps;
-					sprite.velocityY = (this.jumperVerticalUpSpeed - Config.GRAVITY_FORCE * (sprite.jumpTimer.getElapsedTime() / 1000)) * that.pixPerMeter * framePerSecond;
-					sprite.top -=  sprite.velocityY
-				}else{
+				sprite.velocityY = (this.jumperVerticalUpSpeed - Config.GRAVITY_FORCE * (sprite.jumpTimer.getElapsedTime() / 1000)) * that.pixPerMeter * framePerSecond;
+				sprite.top -=  sprite.velocityY;
+
+				if(sprite.jumpTimer.isExpired()){
 					sprite.jumpTimer.stop();
 					sprite.fallTimer.start();
 				}
 			}else if(sprite.fallTimer.isRunning()){
-				if(!sprite.fallTimer.isExpired() && !that.startMovePer){
-					var framePerSecond = 1/that.commonFps;
-					sprite.velocityY = (this.jumperVerticalDownSpeed + Config.GRAVITY_FORCE * (sprite.fallTimer.getElapsedTime() / 1000)) * that.pixPerMeter * framePerSecond;
-					sprite.top +=  sprite.velocityY;
-				}else{
-					that.startMovePer = false;
-					if(that.startMoveAll){
-						sprite.jumpTimer.start();
-					}else{
-						sprite.fallTimer.stop();
-						that.startJump = false;
-					}
+				sprite.velocityY = (this.jumperVerticalDownSpeed + Config.GRAVITY_FORCE * (sprite.fallTimer.getElapsedTime() / 1000)) * that.pixPerMeter * framePerSecond;
+				sprite.top +=  sprite.velocityY;
+				
+				if(sprite.fallTimer.isExpired()){
+					that.roleIsMoving ? sprite.jumpTimer.start() : sprite.fallTimer.stop();
 				}
 			}
 		}
 	};
 	
 	this.jumperMoveBehavior = {
-		distanceGap:0,
+		distanceLeftGap:0,
+		distanceTopGap:0,
+		originTop:0,
 		originLeft:0,
+		peakAmend:function(sprite){
+			if(that.currentPointer === 12){
+				that.jumper.top = that.rolesHalfTop;
+				that.jumper.left = that.rolesHalfLeft;
+			}
+			if(that.currentPointer === 24){
+				that.jumper.top = that.rolesInitialTop;
+				that.jumper.left = that.rolesInitialLeft;
+			}
+		},
+		verticalAmend:function(sprite){
+			this.distanceTopGap = Math.abs(sprite.top - this.originTop) - that.verticalPacePix;
+			this.originTop = 0;
+			console.log(this.distanceTopGap)
+
+			if(this.distanceTopGap < 0){
+				if(that.currentPointer > 12 && that.currentPointer < 25){
+					sprite.top -= this.distanceTopGap;
+				}else{
+					sprite.top += this.distanceTopGap;
+				}
+			}else{
+				if(that.currentPointer > 12 && that.currentPointer < 25){
+					sprite.top -= this.distanceTopGap;
+				}else{
+					sprite.top += this.distanceTopGap;
+				}
+			}
+		},
+		horizontalAmend:function(sprite){
+			this.distanceLeftGap = Math.abs(sprite.left - this.originLeft) - that.horizontalPacePix;
+			this.originLeft = 0;
+
+			// 一般都大于0
+			if(this.distanceLeftGap > 0){
+				if(that.currentPointer > 6 && that.currentPointer < 19){
+					sprite.left -= this.distanceLeftGap;
+				}else{
+					sprite.left += this.distanceLeftGap;
+				}
+			}else{
+				if(that.currentPointer > 6 && that.currentPointer < 19){
+					sprite.left += this.distanceLeftGap;
+				}else{
+					sprite.left -= this.distanceLeftGap;
+				}
+			}
+		},
 		execute:function(sprite,context,time){
-			if(!that.startMoveAll) return;
+			if(!that.roleIsMoving) return;
 
-			that.roleActionStart = false;
-
+			if(!this.originTop){
+				this.originTop = sprite.top;
+			}
 			if(!this.originLeft){
 				this.originLeft = sprite.left;
 			}
 			if(sprite.moveTimer.isRunning()){
 				var framePerSecond = 1/that.commonFps;
 				sprite.velocityX = that.jumperPixEverySec * framePerSecond;
+
 				if(that.currentPointer > 6 && that.currentPointer < 19){
 					sprite.left +=  sprite.velocityX;
 				}else{
 					sprite.left -=  sprite.velocityX;
 				}
-				// 修正平移距离差
-				this.distanceGap= Math.abs(sprite.left - this.originLeft) - that.horizontalPacePix;
-				if(this.distanceGap > 0){
-					this.originLeft = 0;
-					if(that.currentPointer > 6 && that.currentPointer < 19){
-						sprite.left -= this.distanceGap;
-					}else{
-						sprite.left += this.distanceGap;
-					}
-				}
 			}
-			
 			if(sprite.moveTimer.isExpired()){
+				// 修正距离差
+				this.verticalAmend(sprite);
+				this.horizontalAmend(sprite);
 				// 起点和顶点重新定位
-				if(that.currentPointer === 12){
-					that.jumper.top = that.rolesHalfTop;
-					that.jumper.left = that.rolesHalfLeft;
-				}
-				if(that.currentPointer === 24){
-					that.jumper.top = that.rolesInitialTop;
-					that.jumper.left = that.rolesInitialLeft;
-				}
-				that.startMovePer = true;
+				this.peakAmend(sprite);
+
 				if(--that.diceTotal){
 					// 确定每一跳后的位置
 					that.currentRunnerLoc();
@@ -392,8 +413,7 @@ function Game(){
 					sprite.moveTimer.start();
 				}else{
 					sprite.moveTimer.stop();
-					that.startMoveAll = false;
-					that.roleActionStart = true;
+					that.roleIsMoving = false;
 					// 人物开始动作
 					// 显示相应的结果
 					that.showResult(that.currentPointer);
@@ -405,7 +425,7 @@ function Game(){
 		lastAdvanceTime:0,
 		changeFrequencyTime:250,
 		execute:function(sprite,context,time){
-			if(!that.roleActionStart) return;
+			if(that.roleIsMoving) return;
 
 			if(this.lastAdvanceTime === 0){
 				this.lastAdvanceTime = time;
@@ -418,34 +438,30 @@ function Game(){
 	};
 	this.jumperBehavior = [this.jumperJumpFallBehavior,this.jumperMoveBehavior,this.jumperActionBehavior];
 
-	this.runnerRunActionBehavior = {
+	this.runnerActionBehavior = {
 		lastAdvanceTime:0,
 		changeFrequencyTime:100,
 		updateAdvance:function(sprite){
-			if(that.currentPointer >= 0 && that.currentPointer < 6){
-				if(sprite.painter.cellsIndex >= 3){
+			var currentPointer = that.currentPointer,
+				spriteCellIndex = sprite.painter.cellsIndex;
+			switch(true){
+				case currentPointer >= 0 && currentPointer < 6 && spriteCellIndex >= 3:
 					sprite.painter.cellsIndex = 0;
-				}
-			}
-			if(that.currentPointer >= 6 && that.currentPointer < 12){
-				if(sprite.painter.cellsIndex >= 7){
+					break;
+				case currentPointer >= 6 && currentPointer < 12 && spriteCellIndex >= 7:
 					sprite.painter.cellsIndex = 4;
-				}
-			}
-			if(that.currentPointer >= 12 && that.currentPointer < 18){
-				if(sprite.painter.cellsIndex >= 11){
+					break;
+				case currentPointer >= 12 && currentPointer < 18 && spriteCellIndex >= 11:
 					sprite.painter.cellsIndex = 8;
-				}
-			}
-			if(that.currentPointer >= 18 && that.currentPointer < 24){
-				if(sprite.painter.cellsIndex >= 15){
+					break;
+				case currentPointer >= 18 && currentPointer < 24 && spriteCellIndex >= 15:
 					sprite.painter.cellsIndex = 12;
-				}
+					break;
+				default:break;
 			}
 		},
 		execute:function(sprite,context,time){
-			if(!that.startMoveAll) return;
-			that.roleActionStart = false;
+			if(!that.roleIsMoving) return;
 
 			if(this.lastAdvanceTime === 0){
 				this.lastAdvanceTime = time;
@@ -459,9 +475,7 @@ function Game(){
 	};
 	this.runnerMoveBehavior = {
 		execute:function(sprite,context,time){
-			if(!that.startMoveAll) return;
-
-			that.roleActionStart = false;
+			if(!that.roleIsMoving) return;
 
 			if(sprite.runTimer.isRunning()){
 				var framePerSecond = 1/that.commonFps;
@@ -494,8 +508,7 @@ function Game(){
 					sprite.runTimer.start();
 				}else{
 					sprite.runTimer.stop();
-					that.startMoveAll = false;
-					that.runnerActionStart = true;
+					that.roleIsMoving = false;
 					// 人物开始动作
 					// 显示相应的结果
 					that.showResult(that.currentPointer);
@@ -503,22 +516,23 @@ function Game(){
 			}
 		}
 	};
-	this.runnerBehavior = [this.runnerRunActionBehavior,this.runnerMoveBehavior];
+	this.runnerBehavior = [this.runnerActionBehavior,this.runnerMoveBehavior];
 }
 
 Game.prototype = {
 	start:function(){
 		var that = this;
+		this.showStartBtn();
 		this.showSelectRole();
 		// 选择角色
 		this.selectRole(function(){
-			that.coverAni(that.selectRoleWrap,-560,that.coverSlideTime,gameEasing.easeIn,function(){
+			that.coverAni(that.selectRoleWrap,-that.canvasHeight,that.coverSlideTime,gameEasing.easeIn,function(){
 				document.body.removeChild(that.gameCoverWrap);
 				that.cutDown(that.cutDownTime,function(){
 					// 开始游戏
 					that.startGame();
 				});
-			})
+			});
 		});
 	},
 	startGame:function(){
@@ -535,8 +549,6 @@ Game.prototype = {
 		this.startShakeDice();
 		this.closeResume();
 
-		// show fps
-		this.showFps();
 		// window blur/focus
 		this.windowFocus();
 
@@ -546,7 +558,7 @@ Game.prototype = {
 	},
 	animate:function(time){
 		var that = this;
-		if(this.pauseGameTag){
+		if(this.pauseGameTag){	
 			this.togglePauseTimer();
 			setTimeout(function(){
 				window.requestAnimationFrame(function(time){
@@ -562,6 +574,10 @@ Game.prototype = {
 			});
 		}
 	},
+	showStartBtn:function(){
+		this.gameCover.removeChild(this.precentWrap);
+		this.startGameBtn.className = "start-game-btn";
+	},
 	togglePauseTimer:function(){
 		var diceOneAniTimer = this.diceOne.diceAnimationTimer,
 			diceTwoAniTimer = this.diceTwo.diceAnimationTimer,
@@ -570,6 +586,7 @@ Game.prototype = {
 			jumperBAniTimer = this.jumper.fallTimer,
 			jumperMAniTimer = this.jumper.moveTimer;
 		if(this.pauseGameTag && !diceOneAniTimer.isPause()){
+			console.log(+new Date(),"pause time point");
 			diceOneAniTimer.pause();
 			diceTwoAniTimer.pause();
 			jumperTAniTimer.pause();
@@ -578,6 +595,7 @@ Game.prototype = {
 			runnerAniTimer.pause();
 		}
 		if(!this.pauseGameTag && diceOneAniTimer.isPause()){
+			console.log(+new Date,"unpause time point");
 			diceOneAniTimer.unpause();
 			diceTwoAniTimer.unpause();
 			jumperTAniTimer.unpause();
@@ -591,12 +609,12 @@ Game.prototype = {
 			rollCountInter,
 			rollCountW,
 			rollCountDirect = "right";
-		this.rollBtn.addEventListener("mousedown",function(){
+		this.rollBtn.addEventListener("mousedown",function(e){
 			if(that.mousedown || that.pauseGameTag) return;
 			that.mousedown = true;
 			rollCountInter = setInterval(function(){
-				rollCountW = that.rollCountSelect.style.width ? that.rollCountSelect.style.width : 0;
-				rollCountW = parseInt(rollCountW);
+				rollCountW = that.rollCountSelect.style.width;
+				rollCountW = rollCountW ? parseInt(rollCountW) : 0;
 				if(rollCountDirect === "left"){
 					that.rollCountSelect.style.width = rollCountW - 10 + "px";
 				}else{
@@ -609,16 +627,24 @@ Game.prototype = {
 				}
 			},16)
 		},false)
+		// 当按下且鼠标离开区域则触发
+		this.rollBtn.addEventListener("mouseout",function(e){
+			if(that.mousedown && !that.pauseStartTime){
+				var event = document.createEvent("HTMLEvents");
+  				event.initEvent("mouseup", true, false);
+  				this.dispatchEvent(event);
+			}
+		},false)
 		this.rollBtn.addEventListener("mouseup",function(){
 			if(that.mouseup || that.pauseGameTag) return;
 			that.mouseup = true;
+
 			clearInterval(rollCountInter);
 			that.playSound(that.diceSound);
 			that.convertRoll(rollCountW);
-			that.diceRotateReset();
 			that.diceDetailNum(that.diceTotal);
 			that.rollDiceShow();
-			// 确定每次掷完筛子后人物的位置
+			// 确定每次掷完骰子后人物的位置
 			that.lastRunnerLoc();
 			that.diceStartRotate()
 		},false)
@@ -646,7 +672,7 @@ Game.prototype = {
 		},1500)
 	},
 	diceDetailNum:function(diceAll){
-		// 根据总筛子数，随机分配每个筛子的点数
+		// 根据总骰子数，随机分配每个骰子的点数
 		var diceTotalReal = diceAll - 2;
 		if(diceTotalReal > 5){
 			this.diceOneNum = this.intervalRandom(diceTotalReal - 5,5)
@@ -656,14 +682,20 @@ Game.prototype = {
 		this.diceTwoNum = diceTotalReal - this.diceOneNum;
 	},
 	convertRoll:function(w){
-		if(w <= 50){
-			this.diceTotal = this.intervalRandom(2,3);
-		}else if(w > 50 && w <= 100){
-			this.diceTotal = this.intervalRandom(3,6);
-		}else if(w > 100 && w <= 150){
-			this.diceTotal = this.intervalRandom(6,9);
-		}else if(w > 150 && w <= 200){
-			this.diceTotal = this.intervalRandom(9,12);
+		switch(true){
+			case w <= 50:
+				this.diceTotal = this.intervalRandom(2,3);
+				break;
+			case w > 50 && w <= 100:
+				this.diceTotal = this.intervalRandom(3,6);
+				break;
+			case w > 100 && w <= 150:
+				this.diceTotal = this.intervalRandom(6,9);
+				break;
+			case w > 150 && w <= 200:
+				this.diceTotal = this.intervalRandom(9,12);
+				break;
+			default:break;
 		}
 	},
 	intervalRandom:function(n,m){
@@ -672,6 +704,8 @@ Game.prototype = {
 		return Math.floor(Math.random() * r + n);
 	},
 	diceStartRotate:function(){
+		this.dicesIsHidden = false;
+
 		this.startShakeOneDice = true;
 		this.startShakeTwoDice = true;
 		// 开始计时
@@ -683,10 +717,9 @@ Game.prototype = {
 		this.diceTwo.left = -96;
 		this.diceOne.top = -96;
 		this.diceTwo.top = -96;
-	},
-	diceRotateReset:function(){
-		this.oneEndRotate = false;
-		this.twoEndRotate = false;
+		this.startShakeOneDice = false;
+		this.startShakeTwoDice = false;
+		this.dicesIsHidden = true;
 	},
 	cutDown:function(time,callback){
 		var cutInterVal,
@@ -718,10 +751,10 @@ Game.prototype = {
 	},
 	createSprites:function(){
 		this.drawElements();
-		// roles
-		this.createRoles();
 		// dice
 		this.createDice();
+		// roles
+		this.createRoles();
 		// 离屏canvas，分层canvas
 		this.offScreenCanvasBg();
 	},
@@ -757,6 +790,8 @@ Game.prototype = {
 		this.runner.runTimer = new AnimationTimer(this.runnerAniTime);
 	},
 	drawDice:function(time){
+		if(this.dicesIsHidden) return;
+
 		this.diceOne.paint(context);
 		this.diceOne.update(context,time);
 
@@ -764,19 +799,20 @@ Game.prototype = {
 		this.diceTwo.update(context,time);
 	},
 	drawWalkMap:function(){
-		var mapBlockLeft = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["map-block-left.png"])),
-			mapBlockTop = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["map-block-top.png"])),
-			mapBlockBottom = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["map-block-bottom.png"])),
-			mapBlockRight = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["map-block-right.png"])),
+		var mapBlockLeft = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["map-block-left"])),
+			mapBlockTop = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["map-block-top"])),
+			mapBlockBottom = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["map-block-bottom"])),
+			mapBlockRight = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["map-block-right"])),
 
-			mapBlockBlue = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["block-blue.png"])),
-			mapBlockRed = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["block-red.png"])),
-			mapBlockGrey = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["block-grey.png"])),
-			mapBlockWhite = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["block-white.png"])),
-			mapBlockGreen = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["block-green.png"])),
-			mapBlockWBlue = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["block-wblue.png"])),
-			mapBlockBlack = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["block-black.png"])),
-			mapTopCorner = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["map-block-top-corner.png"]));
+			mapBlockBlue = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["block-blue"])),
+			mapBlockRed = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["block-red"])),
+			mapBlockGrey = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["block-grey"])),
+			mapBlockWhite = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["block-white"])),
+			mapBlockGreen = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["block-green"])),
+			mapBlockWBlue = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["block-wblue"])),
+			mapBlockBlack = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["block-black"])),
+
+			mapTopCorner = new Sprite("map-block",new drawStaticImage(Config.imgSource[0],Config.jsonObj["main"]["map-block-top-corner"]));
 
 		this.mapOffCanvas = document.createElement("canvas");
 		this.mapOffContext = this.mapOffCanvas.getContext("2d");
@@ -788,70 +824,73 @@ Game.prototype = {
 		this.mapOffContext.transform(1,-Math.tan(this.slopeAngle),-Math.tan(this.slopeAngle),1,0,0);
 
 		for(var i = 0;i < 24;i++){
-			if(i === 0){
-				mapBlockGreen.top = 360;// 60 * 24 / 4
-				mapBlockGreen.left = 360;// 60 * 6
-				mapBlockGreen.paint(this.mapOffContext);
-			}
-			if(i === 2){
-				mapBlockGrey.top = 360;// 60 * 24 / 4
-				mapBlockGrey.left = 240;// 60 * 4
-				mapBlockGrey.paint(this.mapOffContext);
-			}
-			if(i === 6){
-				mapBlockBlack.left = 0;
-				mapBlockBlack.top = 360;// 60 * 6
-				mapBlockBlack.paint(this.mapOffContext)
-			}
-			if(i === 12){
-				mapTopCorner.top = 0;
-				mapTopCorner.left = 0;
-				mapTopCorner.paint(this.mapOffContext);
-			}
-			if(i < 6 && i !== 0 && i !== 2){
-				mapBlockBlue.top = 360;// 60 * 24 / 4
-				mapBlockBottom.top = 360;// 60 * 24 / 4
+			switch(true){
+				case i === 0:
+					mapBlockGreen.top = 360;// 60 * 24 / 4
+					mapBlockGreen.left = 360;// 60 * 6
+					mapBlockGreen.paint(this.mapOffContext);
+					break;
+				case i === 2:
+					mapBlockGrey.top = 360;// 60 * 24 / 4
+					mapBlockGrey.left = 240;// 60 * 4
+					mapBlockGrey.paint(this.mapOffContext);
+					break;
+				case i === 6:
+					mapBlockBlack.left = 0;
+					mapBlockBlack.top = 360;// 60 * 6
+					mapBlockBlack.paint(this.mapOffContext);
+					break;
+				case i === 12:
+					mapTopCorner.top = 0;
+					mapTopCorner.left = 0;
+					mapTopCorner.paint(this.mapOffContext);
+					break;
+				case i < 6:
+					mapBlockBlue.top = 360;// 60 * 24 / 4
+					mapBlockBottom.top = 360;// 60 * 24 / 4
 
-				if(this.resumeArr.indexOf(i) !== -1){
-					mapBlockBlue.left = 60 * (6 - i);
-					mapBlockBlue.paint(this.mapOffContext)
-				}else{
-					mapBlockBottom.left = 60 * (6 - i);
-					mapBlockBottom.paint(this.mapOffContext)
-				}
-			}		
-			if(i > 6 && i < 12){
-				mapBlockRed.left = 0;
-				mapBlockRight.left = 0;
-				if(this.resumeArr.indexOf(i) !== -1){
-					mapBlockRed.top = 60 * (12 - i);
-					mapBlockRed.paint(this.mapOffContext)
-				}else{
-					mapBlockRight.top = 60 * (12 - i);
-					mapBlockRight.paint(this.mapOffContext)
-				}
-			}
-			if(i > 12 && i < 18){
-				mapBlockWhite.top = 0;
-				mapBlockBottom.top = 0;
-				if(this.resumeArr.indexOf(i) !== -1){
-					mapBlockWhite.left = 60 * (i - 12);
-					mapBlockWhite.paint(this.mapOffContext)
-				}else{
-					mapBlockBottom.left = 60 * (i - 12);
-					mapBlockBottom.paint(this.mapOffContext)
-				}
-			}
-			if(i >= 18 && i < 24){
-				mapBlockWBlue.left = 360;// 60 * 6
-				mapBlockRight.left = 360;// 60 * 6
-				if(this.resumeArr.indexOf(i) !== -1){
-					mapBlockWBlue.top = 60 * (i - 18);
-					mapBlockWBlue.paint(this.mapOffContext)
-				}else{
-					mapBlockRight.top = 60 * (i - 18);
-					mapBlockRight.paint(this.mapOffContext)
-				}
+					if(this.resumeArr.indexOf(i) !== -1){
+						mapBlockBlue.left = 60 * (6 - i);
+						mapBlockBlue.paint(this.mapOffContext)
+					}else{
+						mapBlockBottom.left = 60 * (6 - i);
+						mapBlockBottom.paint(this.mapOffContext)
+					}
+					break;
+				case i > 6 && i < 12:
+					mapBlockRed.left = 0;
+					mapBlockRight.left = 0;
+					if(this.resumeArr.indexOf(i) !== -1){
+						mapBlockRed.top = 60 * (12 - i);
+						mapBlockRed.paint(this.mapOffContext)
+					}else{
+						mapBlockRight.top = 60 * (12 - i);
+						mapBlockRight.paint(this.mapOffContext)
+					}
+					break;
+				case i > 12 && i < 18:
+					mapBlockWhite.top = 0;
+					mapBlockBottom.top = 0;
+					if(this.resumeArr.indexOf(i) !== -1){
+						mapBlockWhite.left = 60 * (i - 12);
+						mapBlockWhite.paint(this.mapOffContext)
+					}else{
+						mapBlockBottom.left = 60 * (i - 12);
+						mapBlockBottom.paint(this.mapOffContext)
+					}
+					break;
+				case i >= 18 && i < 24:
+					mapBlockWBlue.left = 360;// 60 * 6
+					mapBlockRight.left = 360;// 60 * 6
+					if(this.resumeArr.indexOf(i) !== -1){
+						mapBlockWBlue.top = 60 * (i - 18);
+						mapBlockWBlue.paint(this.mapOffContext)
+					}else{
+						mapBlockRight.top = 60 * (i - 18);
+						mapBlockRight.paint(this.mapOffContext)
+					}
+					break;
+				default:break;
 			}
 		}
 		this.mapOffContext.restore();
@@ -859,10 +898,10 @@ Game.prototype = {
 	drawEnclosure:function(){
 			// 水平围栏
 		var enclosureHorizontal = new Sprite("enclosure-horizontal",new drawStaticImage(Config.imgSource[1],
-																				Config.jsonObj["embellish"]["enclosure-horizontal.png"])),
+																				Config.jsonObj["embellish"]["enclosure-horizontal"])),
 			// 垂直围栏
 			enclosureVertical = new Sprite("enclosure-vertical",new drawStaticImage(Config.imgSource[1],
-																				Config.jsonObj["embellish"]["enclosure-vertical.png"]));
+																				Config.jsonObj["embellish"]["enclosure-vertical"]));
 		this.enclosureVOffCanvas = document.createElement("canvas");
 		this.enclosureVOffContext = this.enclosureVOffCanvas.getContext("2d");
 		this.enclosureVOffCanvas.width = 15;
@@ -883,9 +922,9 @@ Game.prototype = {
 	},
 	drawTrees:function(){
 			// 大树1
-		var tree1 = new Sprite("tree1",new drawStaticImage(Config.imgSource[1],Config.jsonObj["embellish"]["tree-1.png"])),
+		var tree1 = new Sprite("tree1",new drawStaticImage(Config.imgSource[1],Config.jsonObj["embellish"]["tree-1"])),
 			// 大树2
-			tree2 = new Sprite("tree2",new drawStaticImage(Config.imgSource[1],Config.jsonObj["embellish"]["tree-2.png"]));
+			tree2 = new Sprite("tree2",new drawStaticImage(Config.imgSource[1],Config.jsonObj["embellish"]["tree-2"]));
 		this.tree1OffCanvas = document.createElement("canvas");
 		this.tree1OffContext = this.tree1OffCanvas.getContext("2d");
 		this.tree1OffCanvas.width = 129;
@@ -903,7 +942,7 @@ Game.prototype = {
 	},
 	drawTent:function(){
 		// 帐篷
-		var tent = new Sprite("tent",new drawStaticImage(Config.imgSource[1],Config.jsonObj["embellish"]["tent.png"]));
+		var tent = new Sprite("tent",new drawStaticImage(Config.imgSource[1],Config.jsonObj["embellish"]["tent"]));
 		this.tentOffCanvas = document.createElement("canvas");
 		this.tentOffContext = this.tentOffCanvas.getContext("2d");
 		this.tentOffCanvas.width = 148;
@@ -912,7 +951,7 @@ Game.prototype = {
 	},
 	drawFireWood:function(){
 		// 柴火（两堆）
-		var firewood = new Sprite("firewood",new drawStaticImage(Config.imgSource[1],Config.jsonObj["embellish"]["firewood.png"]));
+		var firewood = new Sprite("firewood",new drawStaticImage(Config.imgSource[1],Config.jsonObj["embellish"]["firewood"]));
 		this.firewoodOffCanvas = document.createElement("canvas");
 		this.firewoodOffContext = this.firewoodOffCanvas.getContext("2d");
 		this.firewoodOffCanvas.width = 96;
@@ -924,7 +963,7 @@ Game.prototype = {
 	},
 	drawCask:function(){
 		// 木桶（两堆）
-		var cask = new Sprite("cask",new drawStaticImage(Config.imgSource[1],Config.jsonObj["embellish"]["cask.png"]));
+		var cask = new Sprite("cask",new drawStaticImage(Config.imgSource[1],Config.jsonObj["embellish"]["cask"]));
 		this.caskOffCanvas = document.createElement("canvas");
 		this.caskOffContext = this.caskOffCanvas.getContext("2d");
 		this.caskOffCanvas.width = 120;
@@ -936,7 +975,7 @@ Game.prototype = {
 	},
 	drawChair:function(){
 		// chair
-		var chair = new Sprite("chair",new drawStaticImage(Config.imgSource[1],Config.jsonObj["embellish"]["chair.PNG"]));
+		var chair = new Sprite("chair",new drawStaticImage(Config.imgSource[1],Config.jsonObj["embellish"]["chair"]));
 		this.chairOffCanvas = document.createElement("canvas");
 		this.chairOffContext = this.chairOffCanvas.getContext("2d");
 		this.chairOffCanvas.width = 128;
@@ -948,11 +987,15 @@ Game.prototype = {
 	},
 	drawJumper:function(time){
 		this.jumper.paint(context);
-		this.jumper.update(context,time);
+		if(this.roleIsMoving){
+			this.jumper.update(context,time);
+		}
 	},
 	drawRunner:function(time){
 		this.runner.paint(context);
-		this.runner.update(context,time);
+		if(this.roleIsMoving){
+			this.runner.update(context,time);
+		}
 	},
 	drawElements:function(){
 		this.drawWalkMap();
@@ -985,13 +1028,12 @@ Game.prototype = {
 	},
 	selectRole:function(callback){
 		var $roleObj = this.roleListAll,
-			len = $roleObj.length,
+		 	len = $roleObj.length,
 			that = this;
 		for(var i = 0;i < len;i++){
 			(function(i){
-				$roleObj[i].addEventListener("click",function(e){
+				$roleObj[i].addEventListener("click",function(){
 					that.role = this.dataset.role;
-					$roleObj[i].className += "";
 					that.currentRole = that.role === "runner" ? "runner" : "jumper"; 
 					callback();
 				},false)
@@ -1002,7 +1044,7 @@ Game.prototype = {
 		var that = this;
 		this.startGameBtn.addEventListener("click",function(e){
 			e.preventDefault();
-			that.coverAni(that.gameCover,-560,that.coverSlideTime,gameEasing.easeOut,function(){
+			that.coverAni(that.gameCover,-that.canvasHeight,that.coverSlideTime,gameEasing.easeOut,function(){
 				that.gameCoverWrap.removeChild(that.gameCover);
 				console.log("please select role!!");
 			})
@@ -1049,6 +1091,7 @@ Game.prototype = {
 				that.pokerListBack[j].addEventListener("click",function(){
 					if(that.pokerSelect) return;
 					that.pokerSelect = true;
+
 					var currentPoker = Math.floor(Math.random() * 3);
 					that.pokerList[currentPoker].className = "poker-list one";
 					this.className += " rollOver180";
@@ -1073,7 +1116,7 @@ Game.prototype = {
 					that.pokerTipsWrap.innerHTML = res.info;
 				},true);
 			}else{
-				that.pokerTipsWrap.innerHTML = "你猜错啦,手气不佳呀，下次再来吧！么么哒~";
+				that.pokerTipsWrap.innerHTML = "你猜错啦,手气不佳呀，下次再来吧！";
 			}
 		},500)
 		setTimeout(function(){
@@ -1083,6 +1126,7 @@ Game.prototype = {
 			// reset
 			that.miniGameWrap.className = "mini-game-wrap hide";
 			that.pokerTipsWrap.className = "poker-tips-wrap hide";
+
 			for(var i = 0;i < 3;i++){
 				that.pokerListBack[i].className = "poker-list-back";
 				that.pokerList[i].className = "poker-list";
@@ -1128,6 +1172,7 @@ Game.prototype = {
 		document.addEventListener("keydown",function(e){
 			if(that.shortCutView) return;
 			that.shortCutView = true;
+			
 			var code = e.keyCode;
 			switch(code){
 				case 89:
@@ -1279,21 +1324,26 @@ Game.prototype = {
 			fps = 1000 / (time - this.lastFrameTime);
 		}
 		this.lastFrameTime = time;
+		if(time - this.lastFpsUpdateTime > 1000){
+			this.fpsShow.innerHTML = fps.toFixed(0) + " fps";
+			this.lastFpsUpdateTime = time;
+		}
 		return fps; 
 	},
-	showFps:function(){
-		var that = this;
-		this.fpsShow.innerHTML = this.commonFps.toFixed(0) + " fps";
-		setTimeout(function(){
-			that.showFps.call(that)
-		},500);
-	},
+	// showFps:function(){
+	// 	var that = this;
+	// 	this.fpsShow.innerHTML = this.commonFps.toFixed(0) + " fps";
+	// 	setTimeout(function(){
+	// 		that.showFps.call(that)
+	// 	},1000);
+	// },
 	pauseGame:function(){
 		var that = this;
 		document.addEventListener("keydown",function(e){
 			var code = e.keyCode;
 			// Space
 			if(code === 32){
+				that.spaceTriggerPause = !that.spaceTriggerPause;
 				that.togglePaused();
 			}
 		})
@@ -1301,7 +1351,6 @@ Game.prototype = {
 	togglePaused:function(){
 		var now = +new Date();
 		this.pauseGameTag = !this.pauseGameTag;
-
 		if(this.pauseGameTag){
 			// 记录开始暂停的时间点
 			this.pauseStartTime = now;
@@ -1312,16 +1361,19 @@ Game.prototype = {
 	// 窗口失去/获取焦点时的暂停处理
 	windowFocus:function(){
 		var that = this;
+		if(that.spaceTriggerPause) return;
 		window.onblur = function(){
+			this.windowHasFocus = false;
 			if(!that.pauseGameTag){
 				that.togglePaused();
 			}
 		}
 		window.onfocus = function(){
+			this.windowHasFocus = true;
 			var focusCutTime;
 			if(that.pauseGameTag){
-				// 人物正在运动或者筛子正在投掷时需要有一个倒计时缓冲时间
-				focusCutTime = (!that.roleActionStart || !that.diceStopShake) ? 2 : 0;
+				// 人物正在运动或者骰子正在投掷时需要有一个倒计时缓冲时间
+				focusCutTime = (that.roleIsMoving || !that.diceStopShake) ? 2 : 0;
 				that.cutDown(focusCutTime,function(){
 					that.togglePaused();
 				});

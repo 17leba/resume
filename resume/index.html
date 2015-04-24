@@ -96,8 +96,6 @@
 			canvasBgContext = canvasBg.getContext("2d");
 			
 			loadSources.init(Config.sourceList,function(){
-				document.querySelector(".game-cover").removeChild(document.querySelector(".load-precent-wrap"));
-				document.querySelector(".start-game-btn").className = "start-game-btn";
 				var game = new Game();
 				game.start();
 			});
