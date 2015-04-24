@@ -388,9 +388,9 @@ body{
   -webkit-transform: translateZ(0);
   -ms-transform: translateZ(0);
   transform: translateZ(0);
-  -webkit-transition: all .6s ease;
-  -ms-transition: all .6s ease;
-  transition: all .6s ease;
+  -webkit-transition: transform .6s ease;
+  -ms-transition: transform .6s ease;
+  transition: transform .6s ease;
   cursor: pointer;
 }
 .poker-list-back{

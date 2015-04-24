@@ -42,6 +42,7 @@ StopWatch.prototype = {
 	},
 	getElapsedTime:function(){
 		if(this.running){
+			// console.log(+new Date,this.totalPauseTime)
 			return +new Date() - this.startTime - this.totalPauseTime;
 		}
 		return this.elapsed;
