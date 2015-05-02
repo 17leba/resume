@@ -4,7 +4,7 @@
 }
 body{
 	font-family: "微软雅黑";
-	background-color: #eee;
+	background-color: #6eb54f;
 }
 .hide{
 	display: none;
@@ -51,6 +51,7 @@ body{
 	margin-top:-280px;
 	width: 1100px;
 	height: 560px;
+  overflow: hidden;
 	background: url(../img/grass-bg.png) repeat left top;
 	border-radius: 5px;
 }
@@ -127,6 +128,7 @@ body{
 	margin-left: -550px;
 	margin-top:-280px;
 	overflow: hidden;
+  z-index: 1003;
 }
 .game-cover{  
 	position: absolute;
@@ -418,6 +420,64 @@ body{
 .poker-list.five{
   background: url(../img/sub-img.png) no-repeat 0 -570px;
 }
+.audio-btn{
+  position: absolute;
+  z-index: 9998;
+  right: 20px;
+  top:20px;
+  width: 25px;
+  height: 26px;
+  background: url(../img/audio-btn.png) no-repeat 0 0;
+  background-size: 25px auto;
+  cursor: pointer;
+}
+.audio-btn.close{
+  background-position: 0 -26px;
+}
+.rules-wrap{
+  position: absolute;
+  z-index: 9999;
+  left:50%;
+  top:20%;
+  -webkit-transform:translate(-50%,-50%);
+  transform:translate(-50%,-50%);
+  opacity: 0;
+  font-size: 14px;
+  list-style-position: inside;
+  padding: 30px 20px;
+  background-color: #fff;
+  border-radius: 10px;
+  -webkit-transition: all .5s ease-in;
+  -ms-transition: all .5s ease-in;
+  transition: all .5s ease-in;
+}
+.rules-wrap.position{
+  top:50%;
+  opacity: 1;
+}
+.rules-close-btn{
+  position: absolute;
+  right: 10px;
+  top:0;
+  font-size: 24px;
+  list-style-type: none;
+  cursor: pointer;
+}
+.rules-list{
+  margin:5px 0;
+}
+.orientation-tip{
+  position: absolute;
+  z-index: 9999;
+  left: 0;
+  top:0;
+  width: 100%;
+  height: 100%;
+  padding-top: 50%;
+  font-size: 14px;
+  background-color: #fff;
+  text-align: center;
+}
 .rollOver0{
   -webkit-transform:rotateY(0deg);
   -ms-transform:rotateY(0deg);
@@ -490,7 +550,7 @@ body{
   }
 }
 
-@keyframes zoomOut {
+/*@keyframes zoomOut {
   0% {
     opacity: 1;
   }
@@ -721,4 +781,4 @@ body{
   40% {
     box-shadow: 0 2.5em 0 0 #fff;
   }
-}
+}*/

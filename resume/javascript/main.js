@@ -19,7 +19,7 @@ function Game(){
 	this.entranceBlackRoom = false;
 	// 逃离小黑屋需投掷的骰子次数
 	this.fleeBlackRoom = 3;
-	// 假定屏幕高为10m
+	// 假定地图高为10m
 	this.canvasPresumeHeight = 10;
 	this.canvasHalfPersumeHeight = this.canvasPresumeHeight / 2;
 	// pix/meter
@@ -27,7 +27,7 @@ function Game(){
 	// 骰子的时间
 	this.diceOneAniTime = 900;
 	this.diceTwoAniTime = 1000;
-	// 骰子下落到屏幕一半（5m）所需的初始垂直速度（m/s）
+	// 骰子下落到地图一半（5m）所需的初始垂直速度（m/s）
 	this.diceOneYStartSpeed = (this.canvasHalfPersumeHeight - 0.5 * Config.GRAVITY_FORCE * Math.pow(this.diceOneAniTime / 1000,2)) / (this.diceOneAniTime / 1000);
 	this.diceTwoYStartSpeed = (this.canvasHalfPersumeHeight - 0.5 * Config.GRAVITY_FORCE * Math.pow(this.diceTwoAniTime / 1000,2)) / (this.diceTwoAniTime / 1000);
 	// 骰子水平每秒移动像素
@@ -70,8 +70,8 @@ function Game(){
 	this.verticalPacePix = Math.floor(this.mapVertical / 6);
 	// 跳跃者每一步的时间
 	this.jumperMoveAniTime = 300;
-	// 跳跃和下降的时间，为移动时间的一半
-	this.jumperJumpAniTime = this.jumperMoveAniTime / 2;
+	// 跳跃和下降的时间，为移动时间的一半，减去些许误差时间
+	this.jumperJumpAniTime = (this.jumperMoveAniTime - 20 )/ 2;
 	// 每两格中心点间的高度(m)
 	this.jumperGridMeter = this.verticalPacePix * this.canvasHalfPersumeHeight / (this.canvasHeight / 2);
 	// 每秒水平移动多少像素
@@ -132,6 +132,8 @@ function Game(){
 	this.pokerList = document.querySelectorAll(".poker-list");
 	this.pokerTipsWrap = document.querySelector(".poker-tips-wrap");
 	this.gameBlackRoom = document.querySelector(".game-black-room");
+	this.audioBtn = document.querySelector(".audio-btn");
+	this.rulesWrap = document.querySelector(".rules-wrap");
 	// cutDown sound
 	this.cutSound = document.getElementById("mp3-cutdown");
 	//开始音效
@@ -226,13 +228,15 @@ function Game(){
 		},
 		roleStartMove:function(){
 			that.currentRunnerLoc();
+			that.roleIsAction = false;
+			that.roleIsMoving = true;
+
 			if(that.currentRole === "runner"){
 				that.runner.runTimer.start();
 			}else{
 				that.jumper.jumpTimer.start();
 				that.jumper.moveTimer.start();
 			}
-			that.roleIsMoving = true;
 		},
 		execute:function(sprite,context,time){
 			var self = this;
@@ -262,7 +266,7 @@ function Game(){
 			if(this.lastAdvanceTime === 0){
 				this.lastAdvanceTime = time;
 			}
-			if(time - this.lastAdvanceTime > (this.changeFrequencyTime-=2)){
+			if(time - this.lastAdvanceTime > (this.changeFrequencyTime -= 2)){
 				this.updateAdvance(sprite);
 				this.lastAdvanceTime = time;
 			}
@@ -288,6 +292,26 @@ function Game(){
 
 	this.jumperJumpFallBehavior = {
 		direction:"up",
+		distanceTopGap:0,
+		originTop:0,
+		verticalAmend:function(sprite){
+			this.distanceTopGap = (Math.abs(sprite.top - this.originTop) - that.verticalPacePix).toFixed(2) - 0;
+			this.originTop = 0;
+			
+			if(this.distanceTopGap < 0){
+				if(that.currentPointer > 12 && that.currentPointer < 25){
+					sprite.top -= this.distanceTopGap;
+				}else{
+					sprite.top += this.distanceTopGap;
+				}
+			}else{
+				if(that.currentPointer > 12 && that.currentPointer < 25){
+					sprite.top -= this.distanceTopGap;
+				}else{
+					sprite.top += this.distanceTopGap;
+				}
+			}
+		},
 		jumpDirection:function(){
 			if(that.currentPointer > 12 && that.currentPointer < 25){
 				this.direction = "down";
@@ -302,6 +326,9 @@ function Game(){
 		execute:function(sprite,context,time){
 			if(!that.roleIsMoving) return;
 
+			if(!this.originTop){
+				this.originTop = sprite.top;
+			}
 			var framePerSecond = 1/that.commonFps;
 			if(sprite.jumpTimer.isRunning()){
 				// 确认方向
@@ -319,7 +346,10 @@ function Game(){
 				sprite.top +=  sprite.velocityY;
 				
 				if(sprite.fallTimer.isExpired()){
-					that.roleIsMoving ? sprite.jumpTimer.start() : sprite.fallTimer.stop();
+					that.jumperFallEnd = true;
+
+					// 修正垂直距离差
+					this.verticalAmend(sprite);
 				}
 			}
 		}
@@ -327,8 +357,6 @@ function Game(){
 	
 	this.jumperMoveBehavior = {
 		distanceLeftGap:0,
-		distanceTopGap:0,
-		originTop:0,
 		originLeft:0,
 		peakAmend:function(sprite){
 			if(that.currentPointer === 12){
@@ -340,27 +368,8 @@ function Game(){
 				that.jumper.left = that.rolesInitialLeft;
 			}
 		},
-		verticalAmend:function(sprite){
-			this.distanceTopGap = Math.abs(sprite.top - this.originTop) - that.verticalPacePix;
-			this.originTop = 0;
-			console.log(this.distanceTopGap)
-
-			if(this.distanceTopGap < 0){
-				if(that.currentPointer > 12 && that.currentPointer < 25){
-					sprite.top -= this.distanceTopGap;
-				}else{
-					sprite.top += this.distanceTopGap;
-				}
-			}else{
-				if(that.currentPointer > 12 && that.currentPointer < 25){
-					sprite.top -= this.distanceTopGap;
-				}else{
-					sprite.top += this.distanceTopGap;
-				}
-			}
-		},
 		horizontalAmend:function(sprite){
-			this.distanceLeftGap = Math.abs(sprite.left - this.originLeft) - that.horizontalPacePix;
+			this.distanceLeftGap = (Math.abs(sprite.left - this.originLeft) - that.horizontalPacePix).toFixed(2) - 0;
 			this.originLeft = 0;
 
 			// 一般都大于0
@@ -381,9 +390,6 @@ function Game(){
 		execute:function(sprite,context,time){
 			if(!that.roleIsMoving) return;
 
-			if(!this.originTop){
-				this.originTop = sprite.top;
-			}
 			if(!this.originLeft){
 				this.originLeft = sprite.left;
 			}
@@ -398,11 +404,17 @@ function Game(){
 				}
 			}
 			if(sprite.moveTimer.isExpired()){
-				// 修正距离差
-				this.verticalAmend(sprite);
-				this.horizontalAmend(sprite);
+				that.jumperMoveEnd = true;
+			}
+
+			if(that.jumperFallEnd && that.jumperMoveEnd){
+				that.jumperFallEnd = false;
+				that.jumperMoveEnd = false;
+
 				// 起点和顶点重新定位
 				this.peakAmend(sprite);
+				// 修正水平距离差
+				this.horizontalAmend(sprite);
 
 				if(--that.diceTotal){
 					// 确定每一跳后的位置
@@ -410,10 +422,14 @@ function Game(){
 					// jumper sound
 					that.playSound(that.jumperSound);
 
+					sprite.jumpTimer.start();
 					sprite.moveTimer.start();
 				}else{
+					sprite.fallTimer.stop();
 					sprite.moveTimer.stop();
 					that.roleIsMoving = false;
+					// 人物开始做动作
+					that.roleIsAction = true;
 					// 人物开始动作
 					// 显示相应的结果
 					that.showResult(that.currentPointer);
@@ -425,7 +441,7 @@ function Game(){
 		lastAdvanceTime:0,
 		changeFrequencyTime:250,
 		execute:function(sprite,context,time){
-			if(that.roleIsMoving) return;
+			if(!that.roleIsAction) return;
 
 			if(this.lastAdvanceTime === 0){
 				this.lastAdvanceTime = time;
@@ -524,6 +540,8 @@ Game.prototype = {
 		var that = this;
 		this.showStartBtn();
 		this.showSelectRole();
+		this.audioToggle();
+
 		// 选择角色
 		this.selectRole(function(){
 			that.coverAni(that.selectRoleWrap,-that.canvasHeight,that.coverSlideTime,gameEasing.easeIn,function(){
@@ -537,6 +555,8 @@ Game.prototype = {
 	},
 	startGame:function(){
 		var that = this;
+
+		this.showRules();
 		// start sound
 		this.playSound(this.startSound);
 
@@ -586,7 +606,7 @@ Game.prototype = {
 			jumperBAniTimer = this.jumper.fallTimer,
 			jumperMAniTimer = this.jumper.moveTimer;
 		if(this.pauseGameTag && !diceOneAniTimer.isPause()){
-			console.log(+new Date(),"pause time point");
+			// console.log(+new Date(),"pause time point");
 			diceOneAniTimer.pause();
 			diceTwoAniTimer.pause();
 			jumperTAniTimer.pause();
@@ -595,7 +615,7 @@ Game.prototype = {
 			runnerAniTimer.pause();
 		}
 		if(!this.pauseGameTag && diceOneAniTimer.isPause()){
-			console.log(+new Date,"unpause time point");
+			// console.log(+new Date,"unpause time point");
 			diceOneAniTimer.unpause();
 			diceTwoAniTimer.unpause();
 			jumperTAniTimer.unpause();
@@ -629,7 +649,7 @@ Game.prototype = {
 		},false)
 		// 当按下且鼠标离开区域则触发
 		this.rollBtn.addEventListener("mouseout",function(e){
-			if(that.mousedown && !that.pauseStartTime){
+			if(that.mousedown && !that.pauseGameTag){
 				var event = document.createEvent("HTMLEvents");
   				event.initEvent("mouseup", true, false);
   				this.dispatchEvent(event);
@@ -987,7 +1007,7 @@ Game.prototype = {
 	},
 	drawJumper:function(time){
 		this.jumper.paint(context);
-		if(this.roleIsMoving){
+		if(this.roleIsMoving || this.roleIsAction){
 			this.jumper.update(context,time);
 		}
 	},
@@ -1273,12 +1293,21 @@ Game.prototype = {
 		return !sound.ended && sound.currentTime > 0;
 	},
 	playSound:function(sound){
+		if(this.pauseAudioTag) return;
+
 		if(!this.soundIsPlaying(sound)){
 			sound.play();
 		}else{
 			sound.load();
 			sound.play();
 		}
+	},
+	audioToggle:function(){
+		var that = this;
+		this.audioBtn.addEventListener("click",function(){
+			that.pauseAudioTag = !that.pauseAudioTag;
+			that.pauseAudioTag ? this.classList.add("close") : this.classList.remove("close");
+		},false)
 	},
 	findCellData:function(name,jsonObj){
 		var cellDatas = [];
@@ -1402,6 +1431,13 @@ Game.prototype = {
 				return;
 			}
 		},changeTime)
+	},
+	showRules:function(){
+		var that = this;
+		this.rulesWrap.classList.add("position");
+		this.rulesWrap.querySelector(".rules-close-btn").addEventListener("click",function(){
+			document.querySelector(".canvas-main").removeChild(that.rulesWrap);
+		},false)
 	}
 }
 
