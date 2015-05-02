@@ -536,7 +536,7 @@ body{
   -webkit-animation-name: zoomIn;
           animation-name: zoomIn;
 }
-@-webkit-keyframes zoomOut {
+/*@-webkit-keyframes zoomOut {
   0% {
     opacity: 1;
   }
@@ -552,7 +552,7 @@ body{
   }
 }
 
-/*@keyframes zoomOut {
+@keyframes zoomOut {
   0% {
     opacity: 1;
   }
@@ -762,7 +762,7 @@ body{
           backface-visibility: visible !important;
   -webkit-animation-name: flipInY;
           animation-name: flipInY;
-}
+}*/
 
 @-webkit-keyframes bouncedelay {
   0%,
@@ -783,4 +783,4 @@ body{
   40% {
     box-shadow: 0 2.5em 0 0 #fff;
   }
-}*/
+}
