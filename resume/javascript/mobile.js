@@ -18,11 +18,19 @@ var mobile = {
 				document.querySelector(".orientation-tip").classList.add("hide");
 			}
 		},false)
+
+		var event = document.createEvent("HTMLEvents");
+		event.initEvent("orientationchange", true, false);
+		document.body.dispatchEvent(event);
 	},
 	scaleCanvas:function(){
-		var windowW = window.screen.width,
+		var windowW = window.screen.width > window.screen.height ? window.screen.width : window.screen.height,
 			proportion = (windowW / 1080).toFixed(2);
 		if(proportion < 1){
+			document.querySelector(".game-resume-detail").style.webkitTransform = 'scale('+ proportion +')';
+			document.querySelector(".game-resume-detail").style.transform = 'scale('+ proportion +')';
+			document.querySelector(".mini-game-wrap").style.webkitTransform = 'scale('+ proportion +')';
+			document.querySelector(".mini-game-wrap").style.transform = 'scale('+ proportion +')';
 			document.querySelector(".canvas-main").style.webkitTransform = 'scale('+ proportion +')';
 			document.querySelector(".canvas-main").style.transform = 'scale('+ proportion +')';
 			document.querySelector(".game-cover-wrap").style.webkitTransform = 'scale('+ proportion +')';

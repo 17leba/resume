@@ -5,6 +5,7 @@
 body{
 	font-family: "微软雅黑";
 	background-color: #6eb54f;
+  -webkit-user-select:none;
 }
 .hide{
 	display: none;
@@ -252,11 +253,11 @@ body{
   cursor: pointer;
 }
 .game-black-room{
-  width: 500px;
   position: absolute;
   left: 50%;
   top:50%;
-  margin-left: -250px;
+  -webkit-transform:translate(-50%,-50%);
+  transform:translate(-50%,-50%);
   background-color: #eee;
   padding: 15px 20px;
   font-size: 14px;
@@ -276,6 +277,7 @@ body{
   width: 69px;
   height: 69px;
   background: url(../img/sub-img.png) no-repeat -420px -754px;
+  -webkit-touch-callout:none;
 }
 .roll-dice-btn:hover{
   background: url(../img/sub-img.png) no-repeat 0 -777px;
