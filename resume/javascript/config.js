@@ -24,7 +24,7 @@ var Config = {
 	GRAVITY_FORCE : 9.81,
 	// deg
 	deg : Math.PI/180,
-	slopeAngle : 25,
+	slopeAngle : 22,
 	zoneWidth : 60,
 	zoneHeight : 60
-}
+};
