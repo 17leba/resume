@@ -256,9 +256,13 @@ function Game(){
 					return;
 				}
 				var timeOut = setTimeout( function(){
-					self.roleStartMove();
-					that.diceLocReset();
-					clearTimeout(timeOut);
+					if(that.pauseGameTag){
+						setTimeout(arguments.callee,200);
+					}else{
+						self.roleStartMove();
+						that.diceLocReset();
+						clearTimeout(timeOut);
+					}
 				},800)
 
 				return false;
@@ -1130,8 +1134,9 @@ Game.prototype = {
 		var that = this;
 		setTimeout(function(){
 			that.pokerTipsWrap.className = "poker-tips-wrap zoomIn animated";
+			that.pokerTipsWrap.innerHTML = "正在加载...";
 			if(msg === "success"){
-				that.showResume("shortCutKey","resume-json/shortCut-key.json",function(res){
+				that.showResume("shortCutKey",Config.resumeJson.shortCutKey,function(res){
 					that.shortCutShowResume();
 					that.pokerTipsWrap.innerHTML = res.info;
 				},true);
@@ -1157,22 +1162,22 @@ Game.prototype = {
 		var that = this;
 		switch(index){
 			case this.resumeArr[0]:
-				this.showResume("one","resume-json/one.json",function(res){
+				this.showResume("personalInfo",Config.resumeJson.personalInfo,function(res){
 					that.resumeOne.call(that,res);
 				});
 				break;
 			case this.resumeArr[1]:
-				this.showResume("two","resume-json/two.json",function(res){
+				this.showResume("contact",Config.resumeJson.contact,function(res){
 					that.resumeTwo.call(that,res);
 				});
 				break;
 			case this.resumeArr[2]:
-				this.showResume("three","resume-json/three.json",function(res){
+				this.showResume("blog-works",Config.resumeJson.blog,function(res){
 					that.resumeThree.call(that,res);
 				});
 				break;
 			case this.resumeArr[3]:
-				this.showResume("four","resume-json/four.json",function(res){
+				this.showResume("experience",Config.resumeJson.experience,function(res){
 					that.resumeFour.call(that,res);
 				});
 				break;
@@ -1197,25 +1202,25 @@ Game.prototype = {
 			switch(code){
 				case 89:
 					// Y
-					that.showResume("one","resume-json/one.json",function(res){
+					that.showResume("personalInfo",Config.resumeJson.personalInfo,function(res){
 						that.resumeOne.call(that,res)
 					});
 					break;
 				case 80:
 					// P
-					that.showResume("two","resume-json/two.json",function(res){
+					that.showResume("contact",Config.resumeJson.contact,function(res){
 						that.resumeTwo.call(that,res);
 					});
 					break;
 				case 66:
 					// B
-					that.showResume("three","resume-json/three.json",function(res){
+					that.showResume("blog-works",Config.resumeJson.blog,function(res){
 						that.resumeThree.call(that,res);
 					});
 					break;
 				case 78:
 					// N
-					that.showResume("four","resume-json/four.json",function(res){
+					that.showResume("experience",Config.resumeJson.experience,function(res){
 						that.resumeFour.call(that,res);
 					});
 					break;
@@ -1257,12 +1262,13 @@ Game.prototype = {
 	},
 	resumeTwo:function(res){
 		// 联系方式
-		var html = '<h2>' + res.title + '</h2><p>手机：' + res.mobile + '</p><p>Email：' + res.email + '</p><p>QQ：' + res.qq + '</p><p>微博：' + res.weibo + '</p>';
+		var html = '<h2>' + res.title + '</h2><p>手机：' + res.mobile + '</p><p>Email：' + res.email + '</p><p>QQ：' + res.qq + '</p>';
 		this.gameResumeWrap.innerHTML = html;
 	},
 	resumeThree:function(res){
 		// 作品及博客
-		var html = '<h2>' + res.title + '</h2><p>博客：<a href="'+ res.blog +'" target="_blank">点击</a></p><p>GitHub：<a href="'+ res.github +'" target="_blank">点击</a></p><p>jQuery解析：<a href="'+ res["jquery-analysis"] +'" target="_blank">点击</a></p><p>jQuery插件：<a href="'+ res["jquery-plugins"] +'" target="_blank">点击</a><p>本游戏源码：<a href="'+ res["resume-game"] +'" target="_blank">点击</a></p><p>HTML5微信页面：<a href="'+ res["wifi-update"] +'" target="_blank">点击</a></p><p>PC网站：<a href="'+ res["1A"] +'" target="_blank">点击</a></p><p>其它：' + res.soon + '</p>'; 
+		var html = '<h2>' + res.title + '</h2><p>博客：<a href="'+ res.blog +'" target="_blank">点击</a></p><p>GitHub：<a href="'+ res.github +'" target="_blank">点击</a></p><p>jQuery解析：<a href="'+ res["jquery-analysis"] +'" target="_blank">点击</a></p><p>本游戏源码：<a href="'+ res["resume-game"] +'" target="_blank">点击</a></p><p>HTML5微信页面：<a href="'+ res["H5"]["start"] +'" target="_blank">WIFI大作战</a><a href="'+ res["H5"]["jiju"] +'" target="_blank">发布会邀请函</a><a href="'+ res["H5"]["six"] +'" target="_blank">六脉神剑</a></p><p>PC网站：<a href="'+ res["web"]["jly"] +'" target="_blank">点击</a></p><p>其它：' + res.soon + '</p>'; 
+
 		this.gameResumeWrap.innerHTML = html;
 	},
 	resumeFour:function(res){
