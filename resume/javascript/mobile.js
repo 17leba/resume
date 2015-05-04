@@ -6,7 +6,11 @@ var mobile = {
 		this.fixShakeDice()
 	},
 	orientation:function(){
-		document.body.addEventListener("orientationchange",function(){
+		var orientationEvent,orientationFn;
+		orientationEvent = "orientationchange" in window ? "orientationchange" : "deviceorientation" in window ? "deviceorientation" : false;
+
+		if(!orientationchange) return;
+		orientationFn  = "orientationchange" in window ? function(){
 			var orientationAngle = window.orientation;
 			if(orientationAngle === 0 || orientationAngle === 180){
 				document.querySelector(".canvas-main").classList.add("hide");
@@ -17,10 +21,23 @@ var mobile = {
 				document.querySelector(".game-cover-wrap").classList.remove("hide");
 				document.querySelector(".orientation-tip").classList.add("hide");
 			}
-		},false)
+		} : function(e){
+			var orientationAngle = e.alpha;
+			if(orientationchange > 45 && orientationchange < 135 || orientationchange > 225 && orientationchange < 315){
+				document.querySelector(".canvas-main").classList.remove("hide");
+				document.querySelector(".game-cover-wrap").classList.remove("hide");
+				document.querySelector(".orientation-tip").classList.add("hide");
+			}else{
+				document.querySelector(".canvas-main").classList.add("hide");
+				document.querySelector(".game-cover-wrap").classList.add("hide");
+				document.querySelector(".orientation-tip").classList.remove("hide");
+			}
+		}
+
+		window.addEventListener(orientationEvent,orientationFn,false)
 
 		var event = document.createEvent("HTMLEvents");
-		event.initEvent("orientationchange", true, false);
+		event.initEvent(orientationEvent, true, false);
 		document.body.dispatchEvent(event);
 	},
 	scaleCanvas:function(){
@@ -29,10 +46,13 @@ var mobile = {
 		if(proportion < 1){
 			document.querySelector(".game-resume-detail").style.webkitTransform = 'scale('+ proportion +')';
 			document.querySelector(".game-resume-detail").style.transform = 'scale('+ proportion +')';
+
 			document.querySelector(".mini-game-wrap").style.webkitTransform = 'scale('+ proportion +')';
 			document.querySelector(".mini-game-wrap").style.transform = 'scale('+ proportion +')';
+
 			document.querySelector(".canvas-main").style.webkitTransform = 'scale('+ proportion +')';
 			document.querySelector(".canvas-main").style.transform = 'scale('+ proportion +')';
+
 			document.querySelector(".game-cover-wrap").style.webkitTransform = 'scale('+ proportion +')';
 			document.querySelector(".game-cover-wrap").style.transform = 'scale('+ proportion +')';
 		}
