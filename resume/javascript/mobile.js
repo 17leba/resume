@@ -23,7 +23,7 @@ var mobile = {
 			}
 		} : function(e){
 			var orientationAngle = e.alpha;
-			if(orientationchange > 45 && orientationchange < 135 || orientationchange > 225 && orientationchange < 315){
+			if(orientationAngle > 45 && orientationAngle < 135 || orientationAngle > 225 && orientationAngle < 315){
 				document.querySelector(".canvas-main").classList.remove("hide");
 				document.querySelector(".game-cover-wrap").classList.remove("hide");
 				document.querySelector(".orientation-tip").classList.add("hide");
