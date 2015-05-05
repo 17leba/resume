@@ -1,0 +1,21 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>My resume</title>
+</head>
+<body>
+	<div id="ok"></div>
+	<script>
+
+window.addEventListener("deviceorientation",function(e){
+			var orientationAngle = e.alpha;
+			document.getElementById("ok").innerHTML = orientationAngle;
+			if(orientationAngle > 45 && orientationAngle < 135 || orientationAngle > 225 && orientationAngle < 315){
+			}else{
+			}
+		},false)
+	</script>
+</body>
+</html>
