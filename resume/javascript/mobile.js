@@ -22,7 +22,6 @@ var mobile = {
 				document.querySelector(".orientation-tip").classList.add("hide");
 			}
 		} : function(e){
-			alert("con",orientationAngle)
 			var orientationAngle = e.alpha;
 			if(orientationAngle > 45 && orientationAngle < 135 || orientationAngle > 225 && orientationAngle < 315){
 				document.querySelector(".canvas-main").classList.remove("hide");
