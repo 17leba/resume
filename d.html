@@ -6,12 +6,20 @@
 	<title>My resume</title>
 </head>
 <body>
-	<div id="ok"></div>
+	alpha:<div id="alpha"></div>
+	<br>
+	beta:<div id="beta"></div>
+	<br>
+	gamma:<div id="gamma"></div>
 	<script>
 
 window.addEventListener("deviceorientation",function(e){
-			var orientationAngle = e.alpha;
-			document.getElementById("ok").innerHTML = orientationAngle;
+			var alpha = e.alpha,
+				beta = e.beta,
+				gamma = e.gamma;
+			document.getElementById("alpha").innerHTML = alpha;
+			document.getElementById("beta").innerHTML = beta;
+			document.getElementById("gamma").innerHTML = gamma;
 			if(orientationAngle > 45 && orientationAngle < 135 || orientationAngle > 225 && orientationAngle < 315){
 			}else{
 			}
