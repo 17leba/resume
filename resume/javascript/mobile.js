@@ -9,7 +9,7 @@ var mobile = {
 		var orientationEvent,orientationFn;
 		orientationEvent = "orientationchange" in window ? "orientationchange" : "deviceorientation" in window ? "deviceorientation" : false;
 
-		if(!orientationchange) return;
+		if(!orientationEvent) return;
 		orientationFn  = "orientationchange" in window ? function(){
 			var orientationAngle = window.orientation;
 			if(orientationAngle === 0 || orientationAngle === 180){
