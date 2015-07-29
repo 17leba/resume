@@ -1,0 +1,44 @@
+@import "compass";
+@import "framework/varibles";
+@import "framework/reset";
+
+@import "framework/mixin-basic";
+
+body{
+	padding-bottom: 40px;
+}
+header{
+	@include header;
+}
+nav{
+	@include nav;
+}
+.head-line{
+	@include head-line;
+}
+.btn{
+	@include btn;
+}
+.nav-top{
+	position: relative;
+	z-index:2;
+	line-height: 1.0;
+	background-color: #fff;
+	border-bottom: 1px solid $colorBorder;
+}
+.nav-bottom{
+	padding:20px 0;
+	background-color: $colorBg;
+	nav{
+		background-color: $colorWhite;
+	}
+}
+.comment-float{
+	@include comment-float;
+}
+.comment-add{
+	@include comment-add;
+}
+.share-wrap{
+	@include share-wrap;
+}
