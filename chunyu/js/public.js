@@ -30,6 +30,7 @@ $(function(){
 	
 	
 	$('.comment-add-content').focus(function(){
+		alert(1)
 	var _this = this;
 
 	//无键盘时输入框到浏览器窗口顶部距离
