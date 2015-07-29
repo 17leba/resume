@@ -27,4 +27,16 @@ $(function(){
 	$(".slider").css({
 		height:$(document).width() / Math.ceil((640/210))
 	})
+	$(".comment-add-content").on({
+		"focus":function(){
+			$(".comment-add").css({
+				"position":"absolute"
+			})
+		},
+		"blur":function(){
+			$(".comment-add").css({
+				"position":"fixed"
+			})
+		}
+	})
 })
