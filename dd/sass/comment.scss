@@ -1,0 +1,7 @@
+@import "compass";
+@import "framework/varibles";
+@import "framework/mixin-basic";
+
+.comments-wrap{
+	@include comments-wrap;
+}
