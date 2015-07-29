@@ -23,4 +23,8 @@ $(function(){
 		$this.closest(".comment-float").addClass("hide")
 			.siblings(".share-wrap").removeClass("hide");
 	})
+	// slide img height
+	$(".slider").css({
+		height:$(document).width() / Math.ceil((640/210))
+	})
 })
