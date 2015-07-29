@@ -29,7 +29,7 @@ $(function(){
 	})
 	
 	
-	/*$('.comment-add-content').focus(function(){
+	$('.comment-add-content').focus(function(){
 	var _this = this;
 
 	//无键盘时输入框到浏览器窗口顶部距离
@@ -79,5 +79,5 @@ $(function(){
 }).blur(function(){//输入框失焦后还原初始状态
 	$(".comment-add-content").removeAttr('style');
 	$(window).unbind('scroll');
-});*/
+});
 })
