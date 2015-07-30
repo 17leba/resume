@@ -28,7 +28,7 @@ $(function(){
 		height:$(document).width() / Math.ceil((640/210))
 	})
 	
-	
+	/*
 	$('.comment-add-content').focus(function(){
 
 	var _this = this;
@@ -80,5 +80,20 @@ $(function(){
 }).blur(function(){//输入框失焦后还原初始状态
 	$(".comment-add-content").removeAttr('style');
 	$(window).unbind('scroll');
-});
+});*/
+if(/iPhone|iPad|iPod/.test(navigator.userAgent)){
+		$(".comment-add-content").on({
+			"focus":function(){
+				$(".comment-add").css({
+					"position":"absolute"
+				})
+				$("html,body").scrollTop($(document).height())
+			},
+			"blur":function(){
+				$(".comment-add").css({
+					"position":"fixed"
+				})
+			}
+		})
+	}
 })
