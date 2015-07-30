@@ -14,6 +14,7 @@ $(function(){
 	// 收起评论框
 	$(".comment-add-cancel").on("click",function(){
 		var $this = $(this);
+		console.log(2323)
 		$this.closest(".comment-add").addClass("hide")
 			.siblings(".comment-float").removeClass("hide");
 	})
@@ -23,8 +24,24 @@ $(function(){
 		$this.closest(".comment-float").addClass("hide")
 			.siblings(".share-wrap").removeClass("hide");
 	})
+	// 
 	// slide img height
 	$(".slider").css({
 		height:$(document).width() / Math.ceil((640/210))
 	})
+	if(/iPhone|iPad|iPod/.test(navigator.userAgent)){
+		$(".comment-add-content").on({
+			"focus":function(){
+				$(".comment-add").css({
+					"position":"static"
+				})
+				$("html,body").scrollTop($(document).height())
+			},
+			"blur":function(){
+				$(".comment-add").css({
+					"position":"fixed"
+				})
+			}
+		})
+	}
 })
