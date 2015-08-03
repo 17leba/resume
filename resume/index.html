@@ -15,7 +15,7 @@
 		if(/Android|iPad|iPhone|iPod|SymbianOS|Windows Phone/i.test(navigator.userAgent)){
 			var mScript = document.createElement("script");
 			mScript.src = "js/mobile-min.js";
-			document.getElementsByTagName("head")[0].appendChild(mScript);
+			document.body.appendChild(mScript);
 		}
 	},false)
 	</script>
