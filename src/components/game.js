@@ -1277,7 +1277,7 @@ Game.prototype = {
 	},
 	resumeThree: function(res) {
 		// 作品及博客
-		var html = '<h2>' + res.title + '</h2><p>博客：<a href="' + res.blog + '" target="_blank">点击</a></p><p>GitHub：<a href="' + res.github + '" target="_blank">点击</a></p><p>jQuery解析：<a href="' + res["jquery-analysis"] + '" target="_blank">点击</a></p><p>本游戏源码：<a href="' + res["resume-game"] + '" target="_blank">点击</a></p><p>HTML5微信页面：<a href="' + res["H5"]["start"] + '" target="_blank">WIFI大作战</a><a href="' + res["H5"]["jiju"] + '" target="_blank">发布会邀请函</a><a href="' + res["H5"]["six"] + '" target="_blank">六脉神剑</a></p><p>PC网站：<a href="' + res["web"]["jly"] + '" target="_blank">点击</a></p><p>其它：' + res.soon + '</p>'
+		var html = '<h2>' + res.title + '</h2>' + '<div class="game-works">'+ res.info +'</div>'
 
 		this.gameResumeWrap.innerHTML = html
 	},

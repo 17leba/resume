@@ -263,6 +263,7 @@ body {
     left: 50%;
     top: 45%;
     font-size: 14px;
+    min-width: 320px;
     line-height: 1.5;
     -webkit-transform: translate(-50%, -50%);
     -moz-transform: translate(-50%, -50%);
@@ -274,7 +275,7 @@ body {
 }
 
 .game-resume-wrap h2 {
-    margin-bottom: 15px;
+    margin-bottom: 5px;
     text-align: center;
 }
 
