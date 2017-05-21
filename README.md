@@ -2,7 +2,7 @@
 大富翁版本的简历，地址：
 http://17leba.github.io/resume
 
-技术栈：Webpack+Canvans+ES6
+技术栈：Webpack+Canvas+ES6
 
 本地预览：
 1. git clone https://github.com/17leba/resume.git
