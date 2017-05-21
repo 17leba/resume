@@ -1,2 +1,2 @@
-# 17leba.github.io
-jQuery Plugin and  My resume
+# resume
+个人简历（webpack+canvas）
