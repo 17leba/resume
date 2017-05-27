@@ -104,7 +104,7 @@ var loadSources = {
 				mediaId = mediaObj.length
 				that.progress = (imageId + mediaId)/sourceNums
 				that.showProgressBar(that.progress,mediaObj[mediaId - 1])
-				loadJson()
+				// loadJson()
 				return
 			}
 			media.addEventListener("canplay",mediaHandler,false)
