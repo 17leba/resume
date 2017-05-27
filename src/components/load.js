@@ -60,7 +60,7 @@ var loadSources = {
 				loadMedia()
 			}
 			that.progress = (imageId + mediaId)/sourceNums
-			that.showProgressBar(that.progress,mediaObj[mediaId - 1])
+			that.showProgressBar(that.progress)
 
 			this.removeEventListener("canplay",mediaHandler,false)
 
@@ -72,7 +72,6 @@ var loadSources = {
 		var loadImg = function() {
 			var image = new Image()
 			image.src = imageObj[imageId]
-
 			image.onload = function() {
 				if (image.complete === true) {
 					Config.imgSource.push(image)
@@ -81,7 +80,7 @@ var loadSources = {
 						loadImg()
 					}
 					that.progress = imageId / sourceNums
-					that.showProgressBar(that.progress, imageObj[imageId - 1])
+					that.showProgressBar(that.progress)
 					if (imageId === imageObj.length) {
 						loadMedia()
 						// loadJson()
@@ -92,22 +91,28 @@ var loadSources = {
 				imageId++
 				loadImg()
 				that.progress = parseFloat(imageId / sourceNums).toFixed(2)
-				that.showProgressBar(that.progress, imageObj[imageId - 1])
+				that.showProgressBar(that.progress)
 			}
 		}
 
 		function loadMedia() {
-			var media = document.createElement("audio")
-			media.src = mediaObj[mediaId]
-			// 不支持video/audio，则跳过，不要音频文件也罢！
-			if(!media.play){
-				mediaId = mediaObj.length
-				that.progress = (imageId + mediaId)/sourceNums
-				that.showProgressBar(that.progress,mediaObj[mediaId - 1])
-				loadJson()
-				return
+			try{
+				var media = document.createElement("audio")
+				media.src = mediaObj[mediaId]
+				// 不支持video/audio，则跳过，不要音频文件也罢！
+				if(!media.play || typeof media['canplay'] == "undefined"){
+					mediaId = mediaObj.length
+					that.progress = (imageId + mediaId)/sourceNums
+					that.showProgressBar(that.progress)
+					callback()
+					// loadJson()
+					return
+				}
+				media.addEventListener("canplay",mediaHandler,false)
+			}catch(e){
+				that.showProgressBar(1)
+				callback()
 			}
-			media.addEventListener("canplay",mediaHandler,false)
 		}
 		/*function loadJson() {
 			var xmlHttp = new XMLHttpRequest() || new ActiveXObject("Microsoft.XMLHTTP")
@@ -152,7 +157,7 @@ var loadSources = {
 		var jsonName = jsonObj.meta.image.replace(/(.png|.jpeg|.jpg|.gif)$/i, "");
 		Config.jsonObj[jsonName] = jsonObj.frames
 	},
-	showProgressBar: function(progress, sourceName) {
+	showProgressBar: function(progress) {
 		var width = Config.progressBarW,
 			height = Config.progressBarH,
 			radius = Config.progressRadius,
