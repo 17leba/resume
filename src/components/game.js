@@ -570,8 +570,6 @@ Game.prototype = {
         })
     },
     startGame: function() {
-        var that = this
-
         this.showRules()
         // start sound
         this.playSound(this.startSound)
@@ -588,19 +586,15 @@ Game.prototype = {
         // window blur/focus
         this.windowFocus()
 
-        window.requestAnimationFrame(function(time) {
-            that.animate(time)
-        })
+        this.animate()
     },
     animate: function(time) {
         var that = this
         if (this.pauseGameTag) {
             this.togglePauseTimer()
-            setTimeout(function() {
-                window.requestAnimationFrame(function(time) {
-                    that.animate(time)
-                })
-            }, 200)
+            window.requestAnimationFrame(function(time) {
+                that.animate(time)
+            })
         } else {
             this.togglePauseTimer()
             this.commonFps = this.fps(time)
