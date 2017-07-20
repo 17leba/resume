@@ -12,15 +12,13 @@ body {
     display: none;
 }
 
-.loading {
+
+.loading:before, .loading:after {
     position: absolute;
     left: 50%;
     top: 50%;
     -webkit-transform: translate(-50%, -50%);
     transform: translate(-50%, -50%);
-}
-
-.loading:before, .loading:after, .loading {
     border-radius: 50%;
     width: 2.5em;
     height: 2.5em;
@@ -36,18 +34,18 @@ body {
 }
 
 .loading:before {
-    left: -3.5em;
+    left: 10em;
     -webkit-animation-delay: -0.32s;
     animation-delay: -0.32s;
 }
 
 .loading:after {
-    left: 3.5em;
+    left: 14em;
 }
 
 .loading:before, .loading:after {
-    content: '';
     position: absolute;
+    content: '';
     top: 0;
 }
 
@@ -88,7 +86,7 @@ body {
 
 #myCanvas, #myCanvas-bg {
     display: block;
-    margin: 10px;
+    margin: 5px;
 }
 
 #myCanvas {
@@ -303,6 +301,8 @@ body {
     top: 50%;
     -webkit-transform: translate(-50%, -50%);
     transform: translate(-50%, -50%);
+    -webkit-transform-origin: left top;
+    transform-origin: left top;
     background-color: #eee;
     padding: 15px 20px;
     font-size: 14px;
@@ -494,14 +494,16 @@ body {
 }
 
 .audio-btn {
-    position: absolute;
-    z-index: 9998;
-    right: 20px;
-    top: 20px;
     width: 25px;
     height: 26px;
+    position: absolute;
+    z-index: 9998;
+    left: 50%;
+    top: 30px;
+    -webkit-transform: translate(-50%, 0);
+    transform: translate(-50%, 0);
     background: url('~static_img/audio-btn.png') no-repeat 0 0;
-    background-size: 25px auto;
+    background-size: 100% auto;
     cursor: pointer;
 }
 
@@ -514,16 +516,15 @@ body {
     z-index: 9999;
     left: 50%;
     top: 20%;
-    -webkit-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
     opacity: 0;
     font-size: 14px;
     list-style-position: inside;
     padding: 20px;
     background-color: #fff;
     border-radius: 10px;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
     -webkit-transition: all .3s ease-in;
-    -ms-transition: all .3s ease-in;
     transition: all .3s ease-in;
 }
 
@@ -560,13 +561,11 @@ body {
 
 .rollOver0 {
     -webkit-transform: rotateY(0deg);
-    -ms-transform: rotateY(0deg);
     transform: rotateY(0deg);
 }
 
 .rollOver180 {
     -webkit-transform: rotateY(180deg);
-    -ms-transform: rotateY(180deg);
     transform: rotateY(180deg);
 }
 

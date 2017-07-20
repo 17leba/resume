@@ -3,16 +3,16 @@ import Game from './game'
 // 针对手持设备的判断
 var mobile = {
     init: function() {
-        this.orientation()
+        // this.orientation()
         this.scaleCanvas()
         this.fixShakeDice()
     },
     orientation: function() {
         var orientationEvent, orientationFn
-        orientationEvent = 'orientationchange' in window ? 'orientationchange' : 'deviceorientation' in window ? 'deviceorientation' : false
+        orientationEvent = 'onorientationchange' in window ? 'orientationchange' : 'ondeviceorientation' in window ? 'deviceorientation' : false
 
         if (!orientationEvent) return
-        orientationFn = 'orientationchange' in window ? function() {
+        orientationFn = 'onorientationchange' in window ? function() {
             var orientationAngle = window.orientation
             if (orientationAngle === 0 || orientationAngle === 180) {
                 document.querySelector('.canvas-main').classList.add('hide')

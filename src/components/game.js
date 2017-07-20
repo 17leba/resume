@@ -57,7 +57,7 @@ function Game(canvasW, canvasH, context, canvasBgContext) {
     this.diceOneNum = 0
     this.diceTwoNum = 0
     // 骰子总数
-    this.diceTotal = 0
+    this.diceTotal = 2
     // 行走地图倾斜角度
     this.slopeAngle = Config.slopeAngle * Config.deg
     // 矩阵倾斜角度
@@ -122,6 +122,10 @@ function Game(canvasW, canvasH, context, canvasBgContext) {
     this.spaceTriggerPause = false
     this.commonFps = 60
     this.resumeArr = []
+
+    // 默认关闭音效
+    this.pauseAudioTag = true
+
     // selector
     this.fpsShow = document.getElementById('fps-show')
     this.selectRoleWrap = document.querySelector('.select-role-wrap')
@@ -637,7 +641,7 @@ Game.prototype = {
     startShakeDice: function() {
         var that = this,
             rollCountInter,
-            rollCountW,
+            rollCountW = 0,
             rollCountDirect = 'right'
         this.rollBtn.addEventListener('mousedown', function(e) {
             if (that.mousedown || that.pauseGameTag) return
