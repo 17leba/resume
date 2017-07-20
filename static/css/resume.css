@@ -53,10 +53,8 @@ body {
     position: absolute;
     left: 50%;
     top: 50%;
-    margin-left: -550px;
-    margin-top: -280px;
-    width: 1100px;
-    height: 560px;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
     background: url('~static_img/grass-bg.png') repeat left top;
     border-radius: 5px;
 }
